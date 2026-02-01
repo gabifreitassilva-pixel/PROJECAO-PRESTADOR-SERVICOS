@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlicoGabi - Oficial Final</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --roxo: #7d5fff; --vermelho: #ff4d4d; --verde: #2ecc71; --amarelo: #ffb142; --lilas: #f3f0ff; --cinza: #b2bec3; }
+        body { font-family: sans-serif; background: #2d3436; display: flex; justify-content: center; margin: 0; padding: 5px; }
+        .app-shell { width: 360px; height: 780px; background: white; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; border: 8px solid #1e272e; position: relative; }
+
+        /* HEADER PREMIUM */
+        .header { background: var(--roxo); color: white; padding: 35px 20px; text-align: center; flex-shrink: 0; }
+        .header i { font-size: 40px; margin-bottom: 10px; }
+        .header h1 { margin: 0; font-size: 26px; font-weight: bold; }
+        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+
+        .tab-content { flex-grow: 1; overflow-y: auto; display: none; padding-bottom: 80px; }
+        .tab-active { display: block; }
+
+        /* MEDICAÇÃO ATUAL */
+        .med-section { padding: 15px; display: flex; justify-content: space-around; gap: 8px; }
+        .med-card { border: 1px solid #eee; border-radius: 15px; padding: 10px; flex: 1; text-align: center; font-size: 11px; background: white; }
+        .med-card i { color: var(--roxo); display: block; margin-bottom: 4px; font-size: 18px; }
+
+        /* QUADRO DE ENTRADA */
+        .input-box { background: var(--lilas); margin: 0 15px 15px; padding: 20px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; }
+        input, select { width: 100%; max-width: 280px; border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 12px; font-size: 14px; box-sizing: border-box; }
+        .btn-save { background: var(--roxo); color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; max-width: 280px; font-weight: bold; cursor: pointer; }
+
+        /* CARDS E EVOLUÇÃO */
+        .card { border: 1px solid #efefef; border-radius: 18px; padding: 18px; margin: 10px 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); }
+        .val-num { font-size: 24px; font-weight: bold; }
+        .ev-row { font-size: 11px; border-top: 1px dashed #eee; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .msg-status { flex: 1; padding: 0 10px; font-weight: bold; font-style: italic; }
+
+        /* LINHA DO TEMPO (HISTÓRICO) */
+        .hist-item { border: 1px solid #eee; border-radius: 15px; padding: 15px; margin: 10px 15px; border-left: 5px solid var(--roxo); position: relative; }
+        .hist-actions { margin-top: 8px; display: flex; gap: 15px; }
+        .btn-mini { border: none; background: none; cursor: pointer; font-size: 11px; font-weight: bold; padding: 0; }
+
+        /* AJUSTES */
+        .config-label { font-size: 12px; font-weight: bold; color: var(--roxo); margin: 12px 20px 5px; display: block; }
+        .time-group { display: flex; gap: 5px; padding: 0 20px; }
+        .btn-zap { background: #2ecc71; color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+        .nav { height: 70px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; background: white; position: absolute; bottom: 0; width: 100%; }
+        .nav-btn { color: #ccc; font-size: 11px; text-align: center; cursor: pointer; flex: 1; }
+        .nav-btn.active { color: var(--roxo); }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div id="home" class="tab-content tab-active">
+        <div class="header">
+            <i class="fas fa-heart-pulse"></i>
+            <h1>GlicoGabi</h1>
+            <p>Vamos cuidar da saúde?</p>
+        </div>
+        <div class="med-section">
+            <div class="med-card"><i class="fas fa-syringe"></i><span id="n1">NPH</span><br><b id="v1">15un</b></div>
+            <div class="med-card"><i class="fas fa-syringe"></i><span id="n2">Regular</span><br><b id="v2">10un</b></div>
+            <div class="med-card"><i class="fas fa-pills"></i><span id="n3">Metf.</span><br><b id="v3">850mg</b></div>
+        </div>
+        <div class="input-box">
+            <select id="momento">
+                <option value="🌅 Jejum">🌅 Jejum</option><option value="☕ Pós-Café">☕ Pós-Café</option>
+                <option value="🥗 Antes Almoço">🥗 Antes Almoço</option><option value="🍱 Pós-Almoço">🍱 Pós-Almoço</option>
+                <option value="🍗 Antes Jantar">🍗 Antes Jantar</option><option value="🍕 Pós-Jantar">🍕 Pós-Jantar</option>
+            </select>
+            <input type="number" id="valor" placeholder="mg/dL">
+            <button class="btn-save" onclick="salvarGlicemia()">Salvar Registro</button>
+        </div>
+        <div id="lista-hoje"></div>
+    </div>
+
+    <div id="evolucao" class="tab-content">
+        <div class="header" style="padding:20px"><h1>Linha do Tempo</h1></div>
+        <div style="padding:15px"><button class="btn-save" onclick="addMarco()">+ Adicionar Marco Histórico</button></div>
+        <div id="lista-marcos"></div>
+    </div>
+
+    <div id="ajustes" class="tab-content">
+        <div class="header" style="padding:20px"><h1>Ajustes</h1></div>
+        <div style="padding: 10px 0;">
+            <span class="config-label">Doses e Nomes Atuais:</span>
+            <div style="display:flex; gap:3px; padding:0 20px"><input id="en" value="NPH" oninput="sinc()"><input id="er" value="Regular" oninput="sinc()"><input id="em" value="Metf." oninput="sinc()"></div>
+            <div style="display:flex; gap:3px; padding:0 20px"><input id="vn" value="15" oninput="sinc()"><input id="vr" value="10" oninput="sinc()"><input id="vm" value="850" oninput="sinc()"></div>
+
+            <span class="config-label">Horários Insulina:</span>
+            <div class="time-group"><input type="time"><input type="time"><input type="time"></div>
+            
+            <span class="config-label">Horários Remédio:</span>
+            <div class="time-group"><input type="time"><input type="time"><input type="time"></div>
+
+            <div style="padding: 20px;">
+                <span class="config-label">Relatório por Mês:</span>
+                <select id="filtro-mes">
+                    <option value="01/2026">Janeiro / 2026</option>
+                    <option value="02/2026">Fevereiro / 2026</option>
+                </select>
+                <button class="btn-save" style="background:var(--cinza); width:100%" onclick="visualizarRelatorio()">Visualizar Relatório na Tela</button>
+                
+                <input type="tel" id="tel-zap" placeholder="WhatsApp do Médico (Ex: 55...)" style="margin-top:10px" onchange="salvarTel()">
+                <button class="btn-zap" onclick="enviarZap()"><i class="fab fa-whatsapp"></i> Enviar p/ WhatsApp</button>
+                
+                <div id="view-relatorio" style="display:none; margin-top:15px; background:#fff; padding:15px; border-radius:15px; border:1px solid #eee; font-size:12px; max-height: 200px; overflow-y: auto;">
+                    <div id="conteudo-relatorio"></div>
+                    <button onclick="this.parentElement.style.display='none'" style="color:red; border:none; background:none; font-weight:bold; margin-top:10px;">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-btn active" onclick="aba('home', this)"><i class="fas fa-home"></i><br>Home</div>
+        <div class="nav-btn" onclick="aba('evolucao', this)"><i class="fas fa-history"></i><br>Evolução</div>
+        <div class="nav-btn" onclick="aba('ajustes', this)"><i class="fas fa-cog"></i><br>Ajustes</div>
+    </div>
+</div>
+
+<script>
+    let registrosGerais = {}; 
+    let marcos = [{data: '2022', txt: 'Descoberta do Diabetes.'}];
+
+    window.onload = function() {
+        const t = localStorage.getItem('glicogabi-tel');
+        if(t) document.getElementById('tel-zap').value = t;
+        const d = localStorage.getItem('glicogabi-dados');
+        if(d) registrosGerais = JSON.parse(d);
+        const m = localStorage.getItem('glicogabi-marcos');
+        if(m) marcos = JSON.parse(m);
+        sinc(); renderHome();
+    };
+
+    function aba(id, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('tab-active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('tab-active');
+        el.classList.add('active');
+        if(id === 'evolucao') renderMarcos();
+    }
+
+    function sinc() {
+        document.getElementById('n1').innerText = document.getElementById('en').value;
+        document.getElementById('n2').innerText = document.getElementById('er').value;
+        document.getElementById('n3').innerText = document.getElementById('em').value;
+        document.getElementById('v1').innerText = document.getElementById('vn').value + "un";
+        document.getElementById('v2').innerText = document.getElementById('vr').value + "un";
+        document.getElementById('v3').innerText = document.getElementById('vm').value + "mg";
+    }
+
+    function salvarTel() { localStorage.setItem('glicogabi-tel', document.getElementById('tel-zap').value); }
+
+    function salvarGlicemia() {
+        const v = parseInt(document.getElementById('valor').value);
+        const m = document.getElementById('momento').value;
+        const agora = new Date();
+        const dataKey = agora.toLocaleDateString('pt-BR');
+        const hora = agora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        if(!v) return;
+
+        let cor = (v < 70 || v > 250) ? "#ff4d4d" : (v > 140 ? "#ffb142" : "#2ecc71");
+        let msg = "";
+
+        if(!registrosGerais[dataKey]) registrosGerais[dataKey] = {};
+        
+        if(!registrosGerais[dataKey][m]) {
+            // Regra: Sugestão apenas na primeira vez
+            if(v < 70) msg = "Hipoglicemia! Comer 15g carbo. Medir 20m";
+            else if(v > 180) msg = "Sugestão: +" + Math.round((v-120)/40) + "un Regular. Medir 20m";
+            else msg = "Dentro do esperado.";
+            registrosGerais[dataKey][m] = { v, h: hora, c: cor, m: msg, evs: [] };
+        } else {
+            // Acompanhamento inteligente
+            const ciclo = registrosGerais[dataKey][m];
+            const ultV = ciclo.evs.length > 0 ? ciclo.evs[ciclo.evs.length-1].v : ciclo.v;
+            if (v < ultV && v > 140) msg = "Melhorando, continue acompanhando.";
+            else if (v <= 140 && v >= 70) msg = "Muito bem! Dentro do padrão.";
+            else if (v >= ultV && v > 180) msg = "Não baixou. Reavaliar correção.";
+            else if (v < 70) msg = "Baixou demais! Carbo rápido.";
+            ciclo.evs.push({ v, h: hora, c: cor, m: msg });
+        }
+
+        localStorage.setItem('glicogabi-dados', JSON.stringify(registrosGerais));
+        renderHome();
+        document.getElementById('valor').value = "";
+    }
+
+    function renderHome() {
+        const l = document.getElementById('lista-hoje'); l.innerHTML = "";
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        if(!registrosGerais[hoje]) return;
+
+        for(let m in registrosGerais[hoje]) {
+            let c = registrosGerais[hoje][m];
+            let evs = c.evs.map(e => `<div class="ev-row"><span>└ ${e.h}</span><span class="msg-status" style="color:${e.c}">${e.m}</span><b style="color:${e.c}">${e.v} mg/dL</b></div>`).join('');
+            l.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between"><div><b>${m}</b><br><small>${hoje} - ${c.h}</small></div><div class="val-num" style="color:${c.c}">${c.v}</div></div><small style="color:${c.c}; font-weight:bold">${c.m}</small>${evs}</div>`;
+        }
+    }
+
+    function renderMarcos() {
+        const l = document.getElementById('lista-marcos'); l.innerHTML = "";
+        marcos.forEach((m, i) => {
+            l.innerHTML += `<div class="hist-item"><b>📌 ${m.data}</b><br><small>${m.txt}</small>
+                <div class="hist-actions"><button class="btn-mini" style="color:blue" onclick="editMarco(${i})">EDITAR</button>
+                <button class="btn-mini" style="color:red" onclick="delMarco(${i})">EXCLUIR</button></div></div>`;
+        });
+        localStorage.setItem('glicogabi-marcos', JSON.stringify(marcos));
+    }
+
+    function addMarco() { const d = prompt("Ano:"); const t = prompt("Descrição:"); if(d && t) { marcos.push({data: d, txt: t}); renderMarcos(); } }
+    function delMarco(i) { if(confirm("Excluir?")) { marcos.splice(i, 1); renderMarcos(); } }
+    function editMarco(i) { const nt = prompt("Nova descrição:", marcos[i].txt); if(nt) { marcos[i].txt = nt; renderMarcos(); } }
+
+    function visualizarRelatorio() {
+        const corpo = document.getElementById('conteudo-relatorio');
+        let html = "<b>RELATÓRIO POR DATA</b><br><hr>";
+        const datas = Object.keys(registrosGerais).reverse();
+        datas.forEach(d => {
+            html += `<div style="background:#f3f0ff; padding:5px; margin-top:5px;"><b>📅 ${d}</b></div>`;
+            for(let m in registrosGerais[d]) {
+                let c = registrosGerais[d][m];
+                html += `<b>${m}:</b> ${c.v}mg (${c.m})<br>`;
+                c.evs.forEach(e => html += `<small style="padding-left:10px; display:block;">└ ${e.h}: ${e.v}mg (${e.m})</small>`);
+            }
+        });
+        corpo.innerHTML = datas.length ? html : "Sem dados.";
+        document.getElementById('view-relatorio').style.display = 'block';
+    }
+
+    function enviarZap() {
+        const t = document.getElementById('tel-zap').value;
+        if(!t) return alert("Cadastre o telefone!");
+        let txt = "*RELATÓRIO GLICOGABI*\n\n";
+        Object.keys(registrosGerais).reverse().forEach(d => {
+            txt += `📅 *${d}*\n`;
+            for(let m in registrosGerais[d]) {
+                let c = registrosGerais[d][m];
+                txt += `*${m}:* ${c.v}mg (${c.m})\n`;
+                c.evs.forEach(e => txt += `  └ ${e.h}: ${e.v}mg (${e.m})\n`);
+            }
+            txt += `\n`;
+        });
+        window.open(`https://wa.me/${t}?text=${encodeURIComponent(txt)}`);
+    }
+</script>
+</body>
+</html>
