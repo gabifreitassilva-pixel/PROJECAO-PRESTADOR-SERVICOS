@@ -1,30 +1,185 @@
-// Localize a função verRelatorio() dentro do seu AJUSTES.HTML e substitua por esta:
-function verRelatorio() {
-    const mes = document.getElementById('selMes').value;
-    const ano = document.getElementById('selAno').value;
-    document.getElementById('txtMes').innerText = mes.toUpperCase();
-    document.getElementById('txtAno').innerText = ano;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlicoGabi - Ajustes e Relatório</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    // Busca os dados salvos pela HOME
-    const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
-    
-    let h = "";
-    for(let i=1; i<=31; i++) {
-        const diaDados = historico.filter(d => d.dia == i);
+    <style>
+        :root {
+            --primaria: #7e57ff;
+            --lavanda-claro: #f4f0ff;
+            --lavanda-medio: #e3d9ff;
+            --texto: #333;
+            --whatsapp: #25d366;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
         
-        const buscar = (m) => diaDados.find(d => d.momento === m)?.valor || "";
+        .container { background: white; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
-        h += `<tr>
-            <td>${i}</td>
-            <td>${buscar('Jejum')}</td>
-            <td>${buscar('Pré-Almoço')}</td>
-            <td>${buscar('Pós-Almoço')}</td>
-            <td>${buscar('Pré-Jantar')}</td>
-            <td>${buscar('Pós-Jantar')}</td>
-            <td>${buscar('Antes de Dormir')}</td>
-            <td></td><td></td>
-        </tr>`;
+        .header { background: var(--primaria); color: white; text-align: center; padding: 15px; }
+        
+        .tabs { display: flex; background: var(--lavanda-claro); margin: 10px 15px; border-radius: 12px; padding: 5px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); cursor: pointer; border-radius: 8px; }
+        .tab-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
+
+        .section-box { background: var(--lavanda-claro); margin: 0 15px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--lavanda-medio); }
+
+        input, select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        
+        .btn-acao { background: var(--primaria); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; }
+        .btn-pdf { background: #9b59b6; }
+        .btn-wpp { background: var(--whatsapp); }
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th { background: var(--primaria); color: white; padding: 10px; font-size: 12px; text-align: left; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+
+        .hidden { display: none !important; }
+
+        /* MODAL RELATÓRIO */
+        #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: none; overflow: auto; }
+        .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: 0; }
+        
+        /* Ajuste para A4 Paisagem */
+        .folha { padding: 8mm; width: 275mm; margin: auto; background: white; color: black; }
+        .tab-rel { width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed; }
+        .tab-rel th { border: 1px solid var(--primaria); padding: 5px; background: var(--lavanda-medio); color: var(--primaria); }
+        .tab-rel td { border: 1px solid var(--lavanda-medio); padding: 3px; text-align: center; height: 5.8mm; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header"><h3>Ajustes e Relatório</h3></div>
+
+    <div class="tabs">
+        <button id="btnDoses" class="tab-btn active" onclick="toggleAba('doses')">Doses</button>
+        <button id="btnRel" class="tab-btn" onclick="toggleAba('relatorio')">Relatório</button>
+    </div>
+
+    <div id="abaDoses">
+        <div class="section-box">
+            <input type="text" id="nomeMed" placeholder="Medicação (Ex: NPH)">
+            <input type="text" id="qtdMed" placeholder="Dose (Ex: 10un)">
+            <button class="btn-acao" onclick="salvarDose()">Salvar Medicação</button>
+        </div>
+        <div class="section-box">
+            <table>
+                <thead><tr><th>Medicação</th><th>Dose</th><th>Ação</th></tr></thead>
+                <tbody id="listaMeds"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="abaRelatorio" class="hidden">
+        <div class="section-box">
+            <select id="selMes">
+                <option value="Janeiro">Janeiro</option> <option value="Fevereiro">Fevereiro</option>
+                <option value="Março">Março</option> <option value="Abril">Abril</option>
+                <option value="Maio">Maio</option> <option value="Junho">Junho</option>
+                <option value="Julho">Julho</option> <option value="Agosto">Agosto</option>
+                <option value="Setembro">Setembro</option> <option value="Outubro">Outubro</option>
+                <option value="Novembro">Novembro</option> <option value="Dezembro">Dezembro</option>
+            </select>
+            <input type="text" id="selAno" value="2024">
+            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Relatório</button>
+            <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
+            <button class="btn-acao btn-wpp" onclick="limparHistorico()" style="background:#f44336">Limpar Tudo</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalRelatorio">
+    <div class="rel-topo">
+        <b>CONTROLE GLICÊMICO</b>
+        <button onclick="fecharRelatorio()">FECHAR X</button>
+    </div>
+    <div id="areaRel" class="folha">
+        <h2 style="text-align:center; color: var(--primaria);">PLANILHA DE CONTROLE</h2>
+        <h3 style="text-align:center;">PERÍODO: <span id="txtMes"></span> / <span id="txtAno"></span></h3>
+        <table class="tab-rel">
+            <thead>
+                <tr>
+                    <th style="width:10mm">Dia</th>
+                    <th>Jejum</th> <th>Pré-Almoço</th> <th>Pós-Almoço</th>
+                    <th>Pré-Jantar</th> <th>Pós-Jantar</th> <th>Antes Dormir</th>
+                    <th>Anotações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoRel"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA DAS ABAS ---
+    function toggleAba(aba) {
+        document.getElementById('abaDoses').classList.toggle('hidden', aba !== 'doses');
+        document.getElementById('abaRelatorio').classList.toggle('hidden', aba !== 'relatorio');
+        document.getElementById('btnDoses').classList.toggle('active', aba === 'doses');
+        document.getElementById('btnRel').classList.toggle('active', aba === 'relatorio');
     }
-    document.getElementById('corpoRel').innerHTML = h;
-    document.getElementById('modalRelatorio').style.display = "block";
-}
+
+    // --- GERENCIAR MEDICAÇÕES ---
+    let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal') || '[]');
+    function salvarDose() {
+        const nome = document.getElementById('nomeMed').value;
+        const qtd = document.getElementById('qtdMed').value;
+        if(!nome || !qtd) return;
+        dbDoses.push({nome, qtd});
+        localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses));
+        renderDoses();
+    }
+    function renderDoses() {
+        document.getElementById('listaMeds').innerHTML = dbDoses.map((d, i) => 
+            `<tr><td>${d.nome}</td><td>${d.qtd}</td><td onclick="removerDose(${i})">❌</td></tr>`).join('');
+    }
+    function removerDose(i) { dbDoses.splice(i,1); localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses)); renderDoses(); }
+
+    // --- RELATÓRIO DINÂMICO ---
+    function verRelatorio() {
+        const mes = document.getElementById('selMes').value;
+        const ano = document.getElementById('selAno').value;
+        document.getElementById('txtMes').innerText = mes.toUpperCase();
+        document.getElementById('txtAno').innerText = ano;
+
+        const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        let h = "";
+        for(let i=1; i<=31; i++) {
+            const diaDados = historico.filter(d => d.dia == i);
+            const buscar = (m) => diaDados.find(d => d.momento === m)?.valor || "";
+
+            h += `<tr>
+                <td>${i}</td>
+                <td>${buscar('Jejum')}</td> <td>${buscar('Pré-Almoço')}</td> <td>${buscar('Pós-Almoço')}</td>
+                <td>${buscar('Pré-Jantar')}</td> <td>${buscar('Pós-Jantar')}</td> <td>${buscar('Antes de Dormir')}</td>
+                <td></td>
+            </tr>`;
+        }
+        document.getElementById('corpoRel').innerHTML = h;
+        document.getElementById('modalRelatorio').style.display = "block";
+    }
+
+    function fecharRelatorio() { document.getElementById('modalRelatorio').style.display = "none"; }
+
+    function exportarPDF() {
+        const element = document.getElementById('areaRel');
+        html2pdf().from(element).set({
+            margin: 5, filename: 'Relatorio_Glicemia.pdf', jsPDF: { orientation: 'landscape' }
+        }).save();
+    }
+
+    function limparHistorico() {
+        if(confirm("Deseja apagar todas as medidas da Home?")) {
+            localStorage.removeItem('gabi_historico_glicemias');
+            alert("Histórico limpo!");
+        }
+    }
+
+    renderDoses();
+</script>
+</body>
+</html>
