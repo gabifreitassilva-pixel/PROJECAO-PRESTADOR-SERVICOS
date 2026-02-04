@@ -4,50 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlicoGabi - Ajustes</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primaria: #7e57ff; --lavanda: #f4f0ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
         .container { padding: 15px; }
-        .header { background: var(--primaria); color: white; text-align: center; padding: 15px; margin: -15px -15px 15px -15px; }
-        .section-box { background: var(--lavanda); padding: 15px; border-radius: 20px; margin-bottom: 15px; }
-        select, input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .header { background: var(--primaria); color: white; text-align: center; padding: 15px; }
+        .section-box { background: var(--lavanda); padding: 15px; border-radius: 20px; margin: 15px 0; }
+        select, input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; }
+        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
         #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; display: none; overflow: auto; }
-        .folha { padding: 10mm; width: 210mm; margin: auto; background: white; color: black; }
-        table { width: 100%; border-collapse: collapse; font-size: 9pt; }
-        th, td { border: 1px solid #333; padding: 5px; text-align: center; }
+        .folha { padding: 10mm; width: 210mm; margin: auto; background: white; }
+        table { width: 100%; border-collapse: collapse; font-size: 8pt; table-layout: fixed; }
+        th, td { border: 1px solid #333; padding: 4px; text-align: center; height: 8mm; }
         th { background: #eee; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header"><h3>Ajustes e Relatórios</h3></div>
+    <div class="header"><h3>Relatórios de Glicemia</h3></div>
     <div class="section-box">
-        <label>Selecione o Mês e Ano do Relatório</label>
+        <label>Mês / Ano</label>
         <select id="selMes">
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-            <option value="3">Março</option><option value="4">Abril</option>
-            <option value="5">Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option>
-            <option value="9">Setembro</option><option value="10">Outubro</option>
-            <option value="11">Novembro</option><option value="12">Dezembro</option>
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+            <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+            <option value="10" selected>Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
         </select>
         <input type="number" id="selAno" value="2024">
-        <button class="btn-acao" onclick="gerarRelatorio()">Visualizar Relatório Fiel</button>
+        <button class="btn-acao" onclick="verRelatorio()">Gerar Relatório</button>
     </div>
 </div>
 
 <div id="modalRelatorio">
-    <div style="background:var(--primaria); color:white; padding:10px; text-align:right;">
-        <button onclick="document.getElementById('modalRelatorio').style.display='none'" style="color:white; background:none; border:1px solid white; padding:5px 10px; cursor:pointer;">FECHAR</button>
+    <div style="background:var(--primaria); color:white; padding:10px; display:flex; justify-content:space-between;">
+        <b>RELATÓRIO PDF</b>
+        <button onclick="document.getElementById('modalRelatorio').style.display='none'" style="color:white; background:none; border:1px solid white;">FECHAR</button>
     </div>
     <div id="areaRel" class="folha">
-        <h2 style="text-align:center">CONTROLE GLICÊMICO - <span id="titMes"></span>/<span id="titAno"></span></h2>
+        <h2 style="text-align:center">CONTROLE GLICÊMICO - <span id="txtMes"></span>/<span id="txtAno"></span></h2>
         <table>
             <thead>
                 <tr>
-                    <th>Dia</th><th>Jejum</th><th>Pós Café</th><th>Pré Almoço</th><th>Pós Almoço</th><th>Pré Jantar</th><th>Pós Jantar</th><th>Dormir</th>
+                    <th rowspan="2" style="width:10mm">Dia</th>
+                    <th colspan="2">Café</th><th colspan="2">Almoço</th><th colspan="2">Jantar</th>
+                    <th rowspan="2">Dormir</th>
+                </tr>
+                <tr>
+                    <th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th>
                 </tr>
             </thead>
             <tbody id="corpoRel"></tbody>
@@ -56,41 +59,38 @@
 </div>
 
 <script>
-    function gerarRelatorio() {
+    function verRelatorio() {
         const mes = parseInt(document.getElementById('selMes').value);
         const ano = parseInt(document.getElementById('selAno').value);
+        document.getElementById('txtMes').innerText = mes;
+        document.getElementById('txtAno').innerText = ano;
+
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
-        
-        document.getElementById('titMes').innerText = mes;
-        document.getElementById('titAno').innerText = ano;
-
         const diasNoMes = new Date(ano, mes, 0).getDate();
-        let html = "";
+        let h = "";
 
-        for(let d = 1; d <= diasNoMes; d++) {
-            // Filtro Inteligente: Busca registros que batem exatamente com dia, mês e ano
-            const dadosDia = historico.filter(reg => {
-                const dataReg = new Date(reg.data + "T00:00:00");
-                return dataReg.getDate() === d && (dataReg.getMonth() + 1) === mes && dataReg.getFullYear() === ano;
+        for(let i=1; i<=diasNoMes; i++) {
+            // Filtra registros do dia i, mês e ano selecionados
+            const diaDados = historico.filter(d => {
+                const parts = d.data.split('-');
+                return parseInt(parts[2]) === i && parseInt(parts[1]) === mes && parseInt(parts[0]) === ano;
             });
 
-            const buscar = (m) => {
-                const r = dadosDia.find(rd => rd.momento.toLowerCase().includes(m.toLowerCase()));
-                return r ? r.valor : "";
-            };
+            // Mapeamento inteligente para as colunas do relatório
+            const b = (momento) => diaDados.find(d => d.momento.toLowerCase().includes(momento.toLowerCase()))?.valor || "";
 
-            html += `<tr>
-                <td>${d}</td>
-                <td>${buscar('Jejum')}</td>
-                <td>${buscar('Pós café')}</td>
-                <td>${buscar('Antes do almoço') || buscar('Pré-Almoço')}</td>
-                <td>${buscar('Depois do almoço') || buscar('Pós-Almoço')}</td>
-                <td>${buscar('Antes da janta') || buscar('Pré-Jantar')}</td>
-                <td>${buscar('Depois da janta') || buscar('Pós-Jantar')}</td>
-                <td>${buscar('Dormir')}</td>
+            h += `<tr>
+                <td>${i}</td>
+                <td>${b('Jejum')}</td>
+                <td>${b('Pós café')}</td>
+                <td>${b('Antes do almoço')}</td>
+                <td>${b('Depois do almoço')}</td>
+                <td>${b('Antes da janta')}</td>
+                <td>${b('Depois da janta')}</td>
+                <td>${b('Dormir')}</td>
             </tr>`;
         }
-        document.getElementById('corpoRel').innerHTML = html;
+        document.getElementById('corpoRel').innerHTML = h;
         document.getElementById('modalRelatorio').style.display = "block";
     }
 </script>
