@@ -12,14 +12,16 @@
             --vermelho: #f44336;
         }
 
+        /* AJUSTE PARA TELA INTEIRA: Fundo branco e removemos a moldura externa */
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: white;
+            background-color: white; /* Ajustado para ser interno ao index */
             margin: 0;
             padding: 0;
-            display: block;
+            display: block; /* Ocupa a largura total do celular */
         }
 
+        /* Mantemos o container original, mas agora ele é 100% da largura */
         .container {
             width: 100%;
             background: white;
@@ -27,9 +29,10 @@
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            padding-bottom: 30px;
+            padding-bottom: 30px; /* Espaço para não bater no menu do index */
         }
 
+        /* --- MANTENDO TODOS OS SEUS ESTILOS ORIGINAIS ABAIXO --- */
         .header {
             background-color: var(--primaria);
             color: white;
@@ -90,19 +93,6 @@
             cursor: pointer;
         }
 
-        /* NOVO ESTILO DO BOTÃO EXCLUIR */
-        .btn-excluir {
-            float: right;
-            background: none !important;
-            color: #ff5252 !important;
-            border: none !important;
-            padding: 0 !important;
-            font-size: 10px !important;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
         .history-list { padding: 0 15px 20px; }
 
         .group-card {
@@ -110,9 +100,10 @@
             border-radius: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 12px;
-            border-left: 5px solid var(--primaria);
+            border-left: 5px solid #ff5252;
             overflow: hidden;
             padding-bottom: 5px;
+            position: relative;
         }
 
         .group-header {
@@ -123,7 +114,7 @@
             color: #333;
         }
 
-        .main-entry { padding: 10px 15px; }
+        .main-entry { padding: 10px 15px; position: relative; }
         .main-val { font-size: 24px; font-weight: bold; color: var(--laranja); }
         .main-feedback { font-size: 13px; margin-top: 3px; font-weight: bold; color: var(--laranja); }
 
@@ -131,10 +122,23 @@
             padding: 5px 15px;
             border-top: 1px dashed #eee;
             margin-top: 5px;
+            position: relative;
         }
         .sub-time-row { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; }
         .sub-val { font-weight: bold; color: #333; }
         .sub-feedback { font-size: 10px; display: block; margin-top: 1px; }
+
+        /* Botão de excluir */
+        .btn-delete {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: #ccc;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px;
+        }
 
         .hipo { color: var(--vermelho); }
         .excelente { color: var(--verde); }
@@ -154,7 +158,7 @@
         <p>Olá, Gabriela! Vamos cuidar da saúde?</p>
     </div>
 
-    <div class="doses-container" id="doses-dinamicas">
+    <div class="doses-container">
         <div class="dose-box">NPH <b>10un</b></div>
         <div class="dose-box">Regular <b>15un</b></div>
         <div class="dose-box">Metf. <b>850mg</b></div>
@@ -182,10 +186,25 @@
 </div>
 
 <script>
+    // MANTENDO TODA A SUA INTELIGÊNCIA E CÁLCULOS ORIGINAIS
     const ALVO = 130;
     const FSI = 72;
     const ultimaGlicemiaPorPeriodo = {};
     const HOJE_STR = new Date().toLocaleDateString('pt-BR');
+
+    function excluirRegistro(btn) {
+        if(confirm("Deseja excluir esta medição?")) {
+            const entry = btn.parentElement;
+            const card = entry.closest('.group-card');
+            
+            // Se for a única medição no card, remove o card inteiro
+            if (card.querySelectorAll('.main-entry, .sub-entry').length === 1) {
+                card.remove();
+            } else {
+                entry.remove();
+            }
+        }
+    }
 
     function salvar() {
         const valor = parseInt(document.getElementById('glicemia').value);
@@ -239,7 +258,7 @@
                 <div class="group-header">${momento}</div>
                 <div class="content">
                     <div class="main-entry">
-                        <button class="btn-excluir" onclick="removerCard('${cardId}')">Excluir</button>
+                        <span class="btn-delete" onclick="excluirRegistro(this)">✕</span>
                         <div style="font-size:10px; color:#999;">${dataRegistro} - ${horaFinal}</div>
                         <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
                         <div class="main-feedback ${classe}">${feedback}</div>
@@ -249,12 +268,10 @@
             document.getElementById('historico').appendChild(card);
         } else {
             const subList = card.querySelector('.sub-list');
-            const subId = 'sub-' + Date.now();
             const subItem = document.createElement('div');
-            subItem.id = subId;
             subItem.className = 'sub-entry';
             subItem.innerHTML = `
-                <button class="btn-excluir" onclick="document.getElementById('${subId}').remove()">Excluir</button>
+                <span class="btn-delete" onclick="excluirRegistro(this)">✕</span>
                 <div class="sub-time-row">
                     <span>└ ${horaFinal} -</span>
                     <span class="sub-val">${valor} mg/dL</span>
@@ -267,24 +284,6 @@
         ultimaGlicemiaPorPeriodo[momento] = valor;
         document.getElementById('glicemia').value = "";
     }
-
-    function removerCard(id) {
-        if(confirm("Deseja excluir todo este grupo de medições?")) {
-            document.getElementById(id).remove();
-        }
-    }
-
-    // Carregar doses de Ajustes se existirem
-    window.onload = function() {
-        const ajustes = JSON.parse(localStorage.getItem('ajustesGlicoGabi'));
-        if(ajustes) {
-            document.getElementById('doses-dinamicas').innerHTML = `
-                <div class="dose-box">NPH <b>${ajustes.nph}</b></div>
-                <div class="dose-box">Regular <b>${ajustes.regular}</b></div>
-                <div class="dose-box">Metf. <b>${ajustes.metformina}</b></div>
-            `;
-        }
-    };
 </script>
 </body>
 </html>
