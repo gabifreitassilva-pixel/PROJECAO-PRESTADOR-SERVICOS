@@ -18,7 +18,6 @@
         .header { background-color: var(--primaria); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 32px; letter-spacing: 1px; }
 
-        /* ÁREA DE DOSES (CONEXÃO COM AJUSTES) */
         .doses-topo { 
             display: flex; 
             justify-content: center; 
@@ -82,7 +81,7 @@
 
     <div class="input-area">
         <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro"></div>
+            <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro" onchange="carregarHistoricoPorData()"></div>
             <div style="flex: 1;"><label>Hora</label><input type="time" id="hora-retro"></div>
         </div>
         
@@ -111,7 +110,6 @@
     const FSI = 72;
     let ultimaGlicemiaPorPeriodo = {};
 
-    // CARREGA AS DOSES CADASTRADAS NA ABA AJUSTES
     function carregarDoses() {
         const dados = localStorage.getItem('gabi_ajustes_vFinal');
         const container = document.getElementById('dosesAjustesHome');
@@ -129,6 +127,27 @@
         }
     }
 
+    // NOVA FUNÇÃO: Carrega os registros da data selecionada
+    function carregarHistoricoPorData() {
+        const historicoDiv = document.getElementById('historico');
+        const dataSelecionada = document.getElementById('data-retro').value;
+        const agora = new Date();
+        const HOJE_STR = agora.toISOString().split('T')[0];
+        const dataParaFiltrar = dataSelecionada || HOJE_STR;
+
+        historicoDiv.innerHTML = ""; // Limpa a tela
+        ultimaGlicemiaPorPeriodo = {}; // Reseta referências de cálculo
+
+        const historicoGeral = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        
+        // Filtra e exibe os registros daquela data
+        const registrosDoDia = historicoGeral.filter(reg => reg.data === dataParaFiltrar);
+
+        registrosDoDia.forEach(reg => {
+            exibirCardNaTela(reg.valor, reg.momento, reg.data, reg.hora);
+        });
+    }
+
     function registrar() {
         const valor = parseInt(document.getElementById('glicemia').value);
         const momento = document.getElementById('momento').value;
@@ -142,35 +161,7 @@
         const dataRegistro = dataRetro || HOJE_STR;
         const horaFinal = horaRetro || agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        // LÓGICA DE FEEDBACK E CÁLCULO DE CORREÇÃO
-        let feedback = "";
-        let classe = "";
-        const subiu = ultimaGlicemiaPorPeriodo[momento] && valor > ultimaGlicemiaPorPeriodo[momento];
-
-        if (valor < 70) {
-            feedback = "Hipoglicemia! Consumir carboidrato rápido.";
-            classe = "perigo";
-        } else if (valor <= 130) {
-            feedback = "Valor excelente!";
-            classe = "excelente";
-        } else if (valor <= 180) {
-            feedback = "Um pouco alto. Beba água.";
-            classe = "alerta";
-        } else {
-            // CÁLCULO BASEADO NO ALVO E FSI
-            if (!ultimaGlicemiaPorPeriodo[momento] || subiu) {
-                let unidades = Math.ceil((valor - ALVO) / FSI);
-                feedback = `Elevada. Sugestão: +${unidades}un Regular.`;
-            } else {
-                feedback = "Aguarde a dose anterior.";
-            }
-            classe = "perigo";
-        }
-
-        // SALVA NO HISTÓRICO PARA O RELATÓRIO (ABA AJUSTES)
         let historicoCompleto = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
-        
-        // Importante: extrai o dia corretamente para a tabela do relatório
         const partesData = dataRegistro.split('-');
         const diaExtraido = parseInt(partesData[2]);
 
@@ -183,14 +174,28 @@
         });
         localStorage.setItem('gabi_historico_glicemias', JSON.stringify(historicoCompleto));
 
-        // SE FOR RETROATIVO, PARA AQUI (SÓ SALVA NO BANCO)
-        if (dataRegistro !== HOJE_STR) {
-            alert("Registro retroativo salvo no relatório!");
-            document.getElementById('glicemia').value = "";
-            return;
+        exibirCardNaTela(valor, momento, dataRegistro, horaFinal);
+        document.getElementById('glicemia').value = "";
+    }
+
+    // Função auxiliar para desenhar o card
+    function exibirCardNaTela(valor, momento, data, hora) {
+        const historicoDiv = document.getElementById('historico');
+        let feedback = "";
+        let classe = "";
+        const subiu = ultimaGlicemiaPorPeriodo[momento] && valor > ultimaGlicemiaPorPeriodo[momento];
+
+        if (valor < 70) { feedback = "Hipoglicemia! Consumir carboidrato rápido."; classe = "perigo"; }
+        else if (valor <= 130) { feedback = "Valor excelente!"; classe = "excelente"; }
+        else if (valor <= 180) { feedback = "Um pouco alto. Beba água."; classe = "alerta"; }
+        else {
+            if (!ultimaGlicemiaPorPeriodo[momento] || subiu) {
+                let unidades = Math.ceil((valor - ALVO) / FSI);
+                feedback = `Elevada. Sugestão: +${unidades}un Regular.`;
+            } else { feedback = "Aguarde a dose anterior."; }
+            classe = "perigo";
         }
 
-        // MOSTRAR NA TELA (CARD DE HOJE)
         const cardId = `card-${momento.replace(/\s+/g, '-')}`;
         let card = document.getElementById(cardId);
 
@@ -203,18 +208,18 @@
                 <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
                 <div class="feedback-txt ${classe}">${feedback}</div>
                 <div class="sub-list"></div>`;
-            document.getElementById('historico').prepend(card);
+            historicoDiv.prepend(card);
         } else {
             const subList = card.querySelector('.sub-list');
-            subList.innerHTML += `<div>└ ${horaFinal} - <b>${valor} mg/dL</b></div>`;
+            subList.innerHTML += `<div>└ ${hora} - <b>${valor} mg/dL</b></div>`;
         }
-
         ultimaGlicemiaPorPeriodo[momento] = valor;
-        document.getElementById('glicemia').value = "";
     }
 
-    // Inicializa as doses ao abrir a página
-    window.onload = carregarDoses;
+    window.onload = function() {
+        carregarDoses();
+        carregarHistoricoPorData(); // Carrega o dia de hoje ao abrir
+    };
 </script>
 
 </body>
