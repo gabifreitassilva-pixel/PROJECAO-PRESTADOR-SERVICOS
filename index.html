@@ -3,125 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlicoGabi - Oficial</title>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#7e57ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <title>GlicoGabi</title>
     <style>
-        :root {
-            --primaria: #7e57ff;
-            --fundo: #f0f0f0;
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; background: #7e57ff; }
+        .nav { display: flex; overflow-x: auto; background: #7e57ff; padding: 10px; gap: 8px; }
+        .nav button { 
+            background: rgba(255,255,255,0.2); border: none; color: white; 
+            padding: 8px 15px; border-radius: 20px; white-space: nowrap; font-weight: bold;
         }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--fundo);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Moldura Estilo Celular */
-        .celular-frame {
-            width: 100%;
-            max-width: 420px;
-            height: 100vh;
-            background: var(--primaria);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* Menu de Navegação Superior com Scroll Horizontal */
-        .nav-tabs {
-            display: flex;
-            overflow-x: auto;
-            background: var(--primaria);
-            padding: 15px 10px;
-            gap: 10px;
-            scrollbar-width: none; /* Firefox */
-        }
-
-        .nav-tabs::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
-
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 25px;
-            white-space: nowrap;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: 0.3s;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: var(--primaria);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        /* Área onde as páginas originais serão abertas */
-        .content-area {
-            flex: 1;
-            background: white;
-            border-radius: 30px 30px 0 0;
-            overflow: hidden;
-            position: relative;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        .nav button.active { background: white; color: #7e57ff; }
+        iframe { width: 100%; height: calc(100% - 60px); border: none; background: white; border-radius: 20px 20px 0 0; }
     </style>
 </head>
 <body>
-
-<div class="celular-frame">
-    <div class="nav-tabs">
-        <button class="tab-btn active" onclick="navegar('home.html', this)">🏠 Home</button>
-        <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">🩺 Consultas</button>
-        <button class="tab-btn" onclick="navegar('historico.HTML', this)">📅 Histórico</button>
-        <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">📦 Estoque</button>
-        <button class="tab-btn" onclick="navegar('ajuste.html', this)">⚙️ Ajustes</button>
-        <button class="tab-btn" onclick="navegar('lembretes .html', this)">🔔 Lembretes</button>
+    <div class="nav">
+        <button class="active" onclick="ir('home.html', this)">🏠 Home</button>
+        <button onclick="ir('consulta e exames.HTML', this)">🩺 Consultas</button>
+        <button onclick="ir('historico.HTML', this)">📅 Histórico</button>
+        <button onclick="ir('ESTOQUE.HTML', this)">📦 Estoque</button>
+        <button onclick="ir('ajuste.html', this)">⚙️ Ajustes</button>
+        <button onclick="ir('lembretes .html', this)">🔔 Lembretes</button>
     </div>
+    <iframe id="app" src="home.html"></iframe>
 
-    <div class="content-area">
-        <iframe id="janela-app" src="home.html"></iframe>
-    </div>
-</div>
-
-<script>
-    // Função para trocar o conteúdo do iframe e gerenciar o botão ativo
-    function navegar(url, botao) {
-        document.getElementById('janela-app').src = url;
-
-        const botoes = document.querySelectorAll('.tab-btn');
-        botoes.forEach(btn => btn.classList.remove('active'));
-        botao.classList.add('active');
-    }
-
-    // Registro do Service Worker (necessário para o PWA)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Registro concluído!', reg))
-                .catch(err => console.log('Erro no registro', err));
-        });
-    }
-</script>
-
+    <script>
+        function ir(url, btn) {
+            document.getElementById('app').src = url;
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
 </body>
 </html>
