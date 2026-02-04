@@ -93,6 +93,8 @@
     function toggleAba(aba) { 
         document.getElementById('abaDoses').classList.toggle('hidden', aba !== 'doses'); 
         document.getElementById('abaConfig').classList.toggle('hidden', aba !== 'config'); 
+        document.getElementById('btnDoses').classList.toggle('active', aba === 'doses');
+        document.getElementById('btnConfig').classList.toggle('active', aba === 'config');
         if(aba === 'doses') render(); 
     }
 
@@ -102,6 +104,10 @@
         if(!nome || !qtd) return alert("Preencha!"); 
         db.push({nome, qtd}); 
         localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); 
+        
+        // Limpa campos e volta
+        document.getElementById('nomeMed').value = "";
+        document.getElementById('qtdMed').value = "";
         toggleAba('doses'); 
     }
 
@@ -109,29 +115,32 @@
         document.getElementById('listaMeds').innerHTML = db.map((m, i) => `<tr><td>${m.nome}</td><td>${m.qtd}</td><td><button onclick="remover(${i})">❌</button></td></tr>`).join(''); 
     }
 
-    function remover(i) { db.splice(i, 1); localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); render(); }
+    function remover(i) { 
+        if(confirm("Remover esta medicação?")) {
+            db.splice(i, 1); 
+            localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); 
+            render(); 
+        }
+    }
 
     function verRelatorio() { 
         const mesVal = document.getElementById('selMes').value;
         const anoVal = document.getElementById('selAno').value;
-
         if(!mesVal || !anoVal) return alert("Por favor, selecione o Mês e digite o Ano.");
-
         const mes = parseInt(mesVal); 
         const ano = parseInt(anoVal); 
         document.getElementById('txtMes').innerText = mesesNomes[mes-1].toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
-
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]'); 
         const diasNoMes = new Date(ano, mes, 0).getDate(); 
         let h = ""; 
         for(let i=1; i<=diasNoMes; i++) { 
             const diaDados = historico.filter(d => {
-                const parts = d.data.split('-');
-                return parseInt(parts[2]) === i && parseInt(parts[1]) === mes && parseInt(parts[0]) === ano;
+                const parts = d.data.split('/');
+                return parseInt(parts[0]) === i && parseInt(parts[1]) === mes && parseInt(parts[2]) === ano;
             });
             const b = (mom) => diaDados.find(d => d.momento.toLowerCase().includes(mom.toLowerCase()))?.valor || "";
-            h += `<tr><td>${i}</td><td>${b('Jejum')}</td><td>${b('Pós café')}</td><td>${b('Antes do almoço')}</td><td>${b('Depois do almoço')}</td><td>${b('Antes da janta')}</td><td>${b('Depois da janta')}</td><td>${b('Dormir')}</td><td></td></tr>`; 
+            h += `<tr><td>${i}</td><td>${b('Jejum')}</td><td>${b('Pós café')}</td><td>${b('Antes do almoço')}</td><td>${b('Depois do almoço')}</td><td>${b('Antes da janta')}</td><td>${b('Depois da janta')}</td><td>${b('Madrugada')}</td><td></td></tr>`; 
         } 
         document.getElementById('corpoRel').innerHTML = h; 
         document.getElementById('modalRelatorio').style.display = "block"; 
