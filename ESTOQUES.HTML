@@ -5,51 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlicoGabi - Estoque</title>
     <style>
-        :root { --primaria:#7e57ff; --laranja:#ff9800; }
-        body { font-family:'Segoe UI',sans-serif; background:white; margin:0; padding:0; }
-        .container { background:white; width: 100%; min-height: 100vh; display:flex; flex-direction:column; padding-bottom: 30px; }
-        .header { background:var(--primaria); color:white; padding:25px; text-align:center; }
-        .tabs { display:flex; background:#f4f0ff; margin:10px 15px; border-radius:12px; padding:5px; }
-        .tab-btn { flex:1; padding:12px; border:none; background:none; font-weight:bold; color:var(--primaria); font-size: 12px; }
-        .tab-btn.active { background:white; box-shadow:0 2px 5px rgba(0,0,0,.1); border-radius:8px; }
-        .input-area { background:#f4f0ff; margin:0 15px 15px; padding:15px; border-radius:20px; display:flex; flex-direction:column; gap:10px; }
-        label { font-size:10px; font-weight:bold; color:var(--primaria); text-transform: uppercase; }
-        input, textarea { padding:12px; border-radius:10px; border:1px solid #ddd; }
-        .btn-acao { background:var(--laranja); color:white; border:none; padding:14px; border-radius:12px; font-weight:bold; cursor:pointer; }
-        .hidden { display:none !important; }
+        :root { --primaria: #7e57ff; --laranja: #ff9800; --lavanda: #f4f0ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
+        .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 30px; }
+        .header { background: var(--primaria); color: white; padding: 25px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        
+        .tabs { display: flex; background: var(--lavanda); margin: 10px 15px; border-radius: 12px; padding: 5px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); font-size: 13px; cursor: pointer; }
+        .tab-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; }
+        
+        .input-area { background: var(--lavanda); margin: 0 15px 15px; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #e3d9ff; }
+        label { font-size: 10px; font-weight: bold; color: var(--primaria); text-transform: uppercase; margin-left: 5px; }
+        input { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; }
+        
+        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-excluir { background: #ffeded; color: #ff4444; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; font-size: 11px; color: var(--primaria); padding: 10px; border-bottom: 2px solid var(--lavanda); }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        .hidden { display: none !important; }
+        .vencido { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header"><h1>GlicoGabi</h1></div>
+    <div class="header"><h1>Estoque GlicoGabi</h1></div>
+    
     <div class="tabs">
-        <button id="tabEntrada" class="tab-btn active">Entrada</button>
-        <button id="tabEstoque" class="tab-btn">Estoque</button>
-        <button id="tabAjuste" class="tab-btn">Ajuste</button>
+        <button id="tabEntrada" class="tab-btn active" onclick="toggleAba('entrada')">Nova Entrada</button>
+        <button id="tabEstoque" class="tab-btn" onclick="toggleAba('estoque')">Saldo Atual</button>
     </div>
-    <div id="abaEntrada" class="content-section">
-        <div class="input-area"><label>Nova Glicemia</label><input type="number" placeholder="mg/dL"><button class="btn-acao" style="background:var(--primaria)">Salvar Glicemia</button></div>
+
+    <div id="abaEntrada">
+        <div class="input-area">
+            <label>Item (Ex: Insulina NPH)</label>
+            <input type="text" id="nomeItem" placeholder="Nome do insumo">
+            
+            <label>Quantidade</label>
+            <input type="number" id="qtdItem" placeholder="Ex: 5">
+            
+            <label>Vencimento</label>
+            <input type="date" id="dataVenc">
+            
+            <button class="btn-acao" onclick="adicionarEstoque()">Salvar no Estoque</button>
+        </div>
     </div>
-    <div id="abaEstoque" class="content-section hidden"><p style="text-align:center; color:#999">Conteúdo do Estoque...</p></div>
-    <div id="abaAjuste" class="content-section hidden">
-        <div class="input-area"><label>Dosagens Atuais</label><textarea id="medsAtuais" rows="4"></textarea><button id="btnSalvarMeds" class="btn-acao" style="background:var(--primaria)">Salvar Dosagens</button></div>
-        <div class="input-area"><button onclick="gerarRelatorio('whatsapp')" class="btn-acao" style="background:var(--verde)">💬 WhatsApp</button></div>
+
+    <div id="abaEstoque" class="hidden">
+        <div class="input-area" style="background: white;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qtd</th>
+                        <th>Venc.</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="corpoEstoque"></tbody>
+            </table>
+        </div>
     </div>
 </div>
+
 <script>
-    const secoes = { tabEntrada: 'abaEntrada', tabEstoque: 'abaEstoque', tabAjuste: 'abaAjuste' };
-    Object.keys(secoes).forEach(tabId => {
-        document.getElementById(tabId).onclick = () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById(secoes[tabId]).classList.remove('hidden');
-        };
-    });
-    function gerarRelatorio(tipo) {
-        const dados = document.getElementById('medsAtuais').value;
-        if(tipo === 'whatsapp') window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(dados)}`);
+    let estoque = JSON.parse(localStorage.getItem('gabi_estoque_v1') || '[]');
+
+    function toggleAba(aba) {
+        document.getElementById('abaEntrada').classList.toggle('hidden', aba !== 'entrada');
+        document.getElementById('abaEstoque').classList.toggle('hidden', aba !== 'estoque');
+        document.getElementById('tabEntrada').classList.toggle('active', aba === 'entrada');
+        document.getElementById('tabEstoque').classList.toggle('active', aba === 'estoque');
+        if(aba === 'estoque') render();
     }
+
+    function adicionarEstoque() {
+        const nome = document.getElementById('nomeItem').value.trim().toUpperCase();
+        const qtd = parseInt(document.getElementById('qtdItem').value);
+        const venc = document.getElementById('dataVenc').value;
+
+        if (!nome || !qtd || !venc) return alert("Preencha todos os campos!");
+
+        // Regra: Se mesmo nome e mesmo vencimento, soma as quantidades
+        const indexExistente = estoque.findIndex(item => item.nome === nome && item.venc === venc);
+
+        if (indexExistente !== -1) {
+            estoque[indexExistente].qtd += qtd;
+        } else {
+            estoque.push({ nome, qtd, venc });
+        }
+
+        // Ordenar por data de vencimento (mais próximo primeiro)
+        estoque.sort((a, b) => new Date(a.venc) - new Date(b.venc));
+
+        localStorage.setItem('gabi_estoque_v1', JSON.stringify(estoque));
+        
+        // Limpar campos
+        document.getElementById('nomeItem').value = "";
+        document.getElementById('qtdItem').value = "";
+        document.getElementById('dataVenc').value = "";
+        
+        alert("Item adicionado!");
+        toggleAba('estoque');
+    }
+
+    function removerItem(index) {
+        if(confirm("Deseja remover este item do estoque?")) {
+            estoque.splice(index, 1);
+            localStorage.setItem('gabi_estoque_v1', JSON.stringify(estoque));
+            render();
+        }
+    }
+
+    function render() {
+        const corpo = document.getElementById('corpoEstoque');
+        const hoje = new Date().toISOString().split('T')[0];
+
+        if (estoque.length === 0) {
+            corpo.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">Estoque vazio</td></tr>';
+            return;
+        }
+
+        corpo.innerHTML = estoque.map((item, index) => {
+            const isVencido = item.venc < hoje ? 'vencido' : '';
+            // Formatar data para PT-BR
+            const dataBr = item.venc.split('-').reverse().join('/');
+            
+            return `
+                <tr>
+                    <td><b>${item.nome}</b></td>
+                    <td>${item.qtd}</td>
+                    <td class="${isVencido}">${dataBr}</td>
+                    <td><button class="btn-excluir" onclick="removerItem(${index})">×</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Inicializar
+    render();
 </script>
 </body>
 </html>
