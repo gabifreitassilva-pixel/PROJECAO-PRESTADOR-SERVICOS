@@ -42,10 +42,6 @@
         .tab-rel { width: 100%; border-collapse: collapse; font-size: 8pt; table-layout: fixed; margin-top: 10px; }
         .tab-rel th { border: 1px solid #333; padding: 4px; background: #eee !important; color: black; font-weight: bold; }
         .tab-rel td { border: 1px solid #333; padding: 3px; text-align: center; height: 6mm; color: black; }
-        
-        @media screen and (max-width: 215mm) {
-            .folha { width: 95%; height: auto; padding: 5mm; }
-        }
     </style>
 </head>
 <body>
@@ -174,12 +170,12 @@
         document.getElementById('txtMes').innerText = mesesNomes[mesNum - 1].toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
 
-        const diasNoMes = new Date(ano, mesNum, 0).getDate(); 
+        const diasNoMes = new Date(ano, mesNum, 0).getDate();
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
         
         let h = ""; 
         for(let i=1; i<=diasNoMes; i++) { 
-            // FILTRO CORRIGIDO: Agora verifica Dia, Mês e Ano exatamente
+            // FILTRO ATUALIZADO: Compara com o campo data completa enviada pela Home
             const diaDados = historico.filter(d => {
                 const dataItem = new Date(d.data + "T00:00:00");
                 return dataItem.getDate() === i && 
@@ -199,33 +195,33 @@
                 <td>${buscar('Depois da janta') || buscar('Pós-Jantar')}</td>
                 <td>${buscar('Antes de Dormir')}</td>
                 <td></td>
-            </tr>`; 
+            </tr>`;
         } 
-        document.getElementById('corpoRel').innerHTML = h; 
-        document.getElementById('modalRelatorio').style.display = "block"; 
+        document.getElementById('corpoRel').innerHTML = h;
+        document.getElementById('modalRelatorio').style.display = "block";
     }
 
     function fecharRelatorio() { document.getElementById('modalRelatorio').style.display = "none"; }
 
     function exportarPDF() { 
         verRelatorio(); 
-        const element = document.getElementById('areaRel'); 
+        const element = document.getElementById('areaRel');
         const opt = { 
             margin: 5, 
-            filename: `Relatorio_Glicemia_${mesesNomes[document.getElementById('selMes').value - 1]}.pdf`, 
+            filename: `Relatorio_Glicemia_${mesesNomes[document.getElementById('selMes').value - 1]}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         }; 
-        html2pdf().from(element).set(opt).save().then(() => { fecharRelatorio(); }); 
+        html2pdf().from(element).set(opt).save().then(() => { fecharRelatorio(); });
     }
 
     function enviarWpp() { 
-        const num = document.getElementById('wppInput').value; 
-        if(!num) return alert("Informe o número."); 
+        const num = document.getElementById('wppInput').value;
+        if(!num) return alert("Informe o número.");
         const mesTexto = mesesNomes[document.getElementById('selMes').value - 1]; 
-        const msg = encodeURIComponent(`Olá! Segue meu Relatório de Glicemia de ${mesTexto}.`); 
-        window.open(`https://wa.me/55${num}?text=${msg}`); 
+        const msg = encodeURIComponent(`Olá! Segue meu Relatório de Glicemia de ${mesTexto}.`);
+        window.open(`https://wa.me/55${num}?text=${msg}`);
     }
 
     render();
