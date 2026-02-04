@@ -1,0 +1,15 @@
+{
+  "name": "GlicoGabi",
+  "short_name": "GlicoGabi",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#7e57ff",
+  "theme_color": "#7e57ff",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2966/2966327.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
