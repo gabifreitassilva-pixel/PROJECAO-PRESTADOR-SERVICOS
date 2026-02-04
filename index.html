@@ -9,61 +9,106 @@
     <style>
         :root { --primaria: #7e57ff; }
         * { box-sizing: border-box; }
+        
         body, html { 
             margin: 0; padding: 0; height: 100%; 
             background-color: #f0f0f0; display: flex; justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
         }
-        /* Moldura Roxa principal */
+
+        /* Estrutura Principal */
         .outer-frame {
             background-color: var(--primaria);
             width: 100%; max-width: 450px; height: 100vh;
             display: flex; flex-direction: column;
-            border: 8px solid var(--primaria);
+            border: 5px solid var(--primaria);
+            overflow: hidden;
         }
-        /* Menu de abas dentro da moldura */
-        .nav-tabs {
-            display: flex; overflow-x: auto; padding: 10px 5px; gap: 8px;
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
-        }
-        .nav-tabs::-webkit-scrollbar { display: none; }
-        .tab-btn {
-            background: rgba(255,255,255,0.2); border: none; color: white;
-            padding: 8px 15px; border-radius: 20px; white-space: nowrap;
-            font-weight: bold; font-size: 12px; cursor: pointer;
-        }
-        .tab-btn.active { background: white; color: var(--primaria); }
-        /* Área branca do conteúdo */
+
+        /* Área Branca (Conteúdo) agora fica em cima */
         .content-container {
-            flex: 1; background: white; border-radius: 25px 25px 0 0;
-            overflow: hidden; position: relative;
+            flex: 1; 
+            background: white; 
+            border-radius: 0 0 25px 25px; /* Arredondado embaixo */
+            overflow: hidden; 
+            position: relative;
         }
+
         iframe { width: 100%; height: 100%; border: none; }
+
+        /* Menu de Abas agora fica EM BAIXO */
+        .nav-tabs {
+            display: flex; 
+            overflow-x: auto; 
+            padding: 15px 10px; 
+            gap: 10px;
+            background: var(--primaria);
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch;
+            align-items: center;
+        }
+
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        /* Estilo dos Botões para não cortar */
+        .tab-btn {
+            background: rgba(255,255,255,0.2); 
+            border: none; 
+            color: white;
+            padding: 10px 15px; 
+            border-radius: 20px; 
+            white-space: nowrap; /* Impede quebra de linha */
+            font-weight: bold; 
+            font-size: 13px; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0; /* Impede que o botão esprema o texto */
+        }
+
+        .tab-btn.active { 
+            background: white; 
+            color: var(--primaria); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
+
     <div class="outer-frame">
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="navegar('home.HTML', this)">🏠 Home</button>
-            <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">🩺 Consultas</button>
-            <button class="tab-btn" onclick="navegar('historico.HTML', this)">📅 Histórico</button>
-            <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">📦 Estoque</button>
-            <button class="tab-btn" onclick="navegar('ajuste .html', this)">⚙️ Ajustes</button>
-            <button class="tab-btn" onclick="navegar('lembretes .html', this)">🔔 Lembretes</button>
-        </div>
         <div class="content-container">
             <iframe id="janela" src="home.html"></iframe>
         </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="navegar('home.html', this)">🏠 Home</button>
+            <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">🩺 Consultas</button>
+            <button class="tab-btn" onclick="navegar('historico.HTML', this)">📅 Histórico</button>
+            <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">📦 Estoque</button>
+            <button class="tab-btn" onclick="navegar('ajuste.html', this)">⚙️ Ajustes</button>
+            <button class="tab-btn" onclick="navegar('lembretes .html', this)">🔔 Lembretes</button>
+        </div>
     </div>
+
     <script>
         function navegar(url, btn) {
             document.getElementById('janela').src = url;
+            
+            // Remove classe active de todos
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            // Adiciona no clicado
             btn.classList.add('active');
+
+            // Garante que o botão clicado fique visível no scroll horizontal
+            btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
+
+        // PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
 </html>
-
