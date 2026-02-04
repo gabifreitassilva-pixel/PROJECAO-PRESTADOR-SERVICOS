@@ -10,7 +10,9 @@
         .container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 30px; }
         .header { background: var(--primaria); color: white; padding: 25px; text-align: center; }
         .doses-topo { display: flex; justify-content: center; gap: 10px; padding: 10px; background: var(--lavanda); flex-wrap: wrap; }
-        .dose-card-topo { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 8px; text-align: center; flex: 1; min-width: 80px; }
+        .dose-card-topo { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 8px; text-align: center; flex: 1; min-width: 80px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .dose-card-topo span { font-size: 10px; color: #666; display: block; text-transform: uppercase; }
+        .dose-card-topo b { color: var(--primaria); font-size: 16px; }
         .input-area { background: var(--lavanda); margin: 15px; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 12px; }
         label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; }
         input, select { padding: 12px; border-radius: 12px; border: 1px solid #ddd; font-size: 15px; }
@@ -23,16 +25,16 @@
         .main-val { font-size: 26px; font-weight: bold; color: #333; }
         .feedback-txt { font-size: 13px; font-weight: bold; margin-top: 5px; }
         .excelente { color: var(--verde); } .alerta { color: var(--laranja); } .perigo { color: var(--vermelho); }
-        .sub-list { margin-top: 8px; font-size: 12px; color: #666; border-top: 1px dashed #eee; padding-top: 8px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header"><h1>GlicoGabi</h1></div>
     <div id="dosesAjustesHome" class="doses-topo"></div>
+
     <div class="input-area">
         <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro"></div>
+            <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro" onchange="renderizarHome()"></div>
             <div style="flex: 1;"><label>Hora</label><input type="time" id="hora-retro"></div>
         </div>
         <label>Momento</label>
@@ -47,12 +49,21 @@
         </select>
         <label>Glicemia (mg/dL)</label>
         <input type="number" id="glicemia" placeholder="Ex: 110" inputmode="numeric">
-        <button class="btn-registrar" onclick="registrar()">Registrar</button>
+        <button class="btn-registrar" onclick="registrar()">Registrar Glicemia</button>
     </div>
     <div class="history-section" id="historico"></div>
 </div>
+
 <script>
     const ALVO = 130; const FSI = 72;
+
+    function carregarDoses() {
+        const dados = localStorage.getItem('gabi_ajustes_vFinal');
+        if (dados) {
+            const doses = JSON.parse(dados);
+            document.getElementById('dosesAjustesHome').innerHTML = doses.map(d => `<div class="dose-card-topo"><span>${d.nome}</span><b>${d.qtd}</b></div>`).join('');
+        }
+    }
 
     function registrar() {
         const valor = parseInt(document.getElementById('glicemia').value);
@@ -63,7 +74,6 @@
         if (!valor) return alert("Insira o valor!");
 
         const agora = new Date();
-        // Se não houver data/hora manual, usa a atual
         const dataFinal = dataInput || agora.toISOString().split('T')[0];
         const horaFinal = horaInput || agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 
@@ -77,28 +87,38 @@
 
     function renderizarHome() {
         const historicoDiv = document.getElementById('historico');
+        const dataFiltro = document.getElementById('data-retro').value || new Date().toISOString().split('T')[0];
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        const registrosDoDia = historico.filter(reg => reg.data === dataFiltro);
+        
         historicoDiv.innerHTML = "";
 
-        // Mostra os registros mais novos primeiro
-        historico.slice().reverse().forEach(reg => {
-            let classe = reg.valor <= 130 ? "excelente" : (reg.valor <= 180 ? "alerta" : "perigo");
-            let dataBR = reg.data.split('-').reverse().join('/');
-            
+        registrosDoDia.slice().reverse().forEach(reg => {
+            let feedback = ""; let classe = "";
+            if (reg.valor < 70) { feedback = "Hipoglicemia! Consumir 15g de carboidrato."; classe = "perigo"; }
+            else if (reg.valor <= 130) { feedback = "Valor excelente!"; classe = "excelente"; }
+            else if (reg.valor <= 180) { feedback = "Um pouco alto. Beba água."; classe = "alerta"; }
+            else { 
+                let unidades = Math.ceil((reg.valor - ALVO) / FSI);
+                feedback = `Elevada. Sugestão: +${unidades} UI Insulina Regular.`; 
+                classe = "perigo"; 
+            }
+
             const card = document.createElement('div');
             card.className = 'group-card';
             card.innerHTML = `
                 <div class="group-header">
                     <span class="momento-txt">${reg.momento}</span>
-                    <span class="data-hora-txt">${dataBR} às ${reg.hora}</span>
+                    <span class="data-hora-txt">${reg.data.split('-').reverse().join('/')} às ${reg.hora}</span>
                 </div>
                 <div class="main-val">${reg.valor} mg/dL</div>
-                <div class="feedback-txt ${classe}">${reg.valor > 180 ? 'Elevada' : 'Normal'}</div>
+                <div class="feedback-txt ${classe}">${feedback}</div>
             `;
             historicoDiv.appendChild(card);
         });
     }
-    window.onload = renderizarHome;
+
+    window.onload = () => { carregarDoses(); renderizarHome(); };
 </script>
 </body>
 </html>
