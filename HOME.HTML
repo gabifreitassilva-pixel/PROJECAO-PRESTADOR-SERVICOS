@@ -12,16 +12,14 @@
             --vermelho: #f44336;
         }
 
-        /* AJUSTE PARA TELA INTEIRA: Fundo branco e removemos a moldura externa */
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: white; /* Ajustado para ser interno ao index */
+            background-color: white;
             margin: 0;
             padding: 0;
-            display: block; /* Ocupa a largura total do celular */
+            display: block;
         }
 
-        /* Mantemos o container original, mas agora ele é 100% da largura */
         .container {
             width: 100%;
             background: white;
@@ -29,10 +27,9 @@
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            padding-bottom: 30px; /* Espaço para não bater no menu do index */
+            padding-bottom: 30px;
         }
 
-        /* --- MANTENDO TODOS OS SEUS ESTILOS ORIGINAIS ABAIXO --- */
         .header {
             background-color: var(--primaria);
             color: white;
@@ -51,15 +48,18 @@
             justify-content: center;
             gap: 10px;
             padding: 10px 15px;
+            flex-wrap: wrap; /* Permite quebrar linha se houver muitas doses */
         }
 
         .dose-box {
             border: 1px solid #eee;
             border-radius: 10px;
-            padding: 5px;
+            padding: 8px;
             text-align: center;
             flex: 1;
+            min-width: 80px;
             font-size: 11px;
+            background: #fafafa;
         }
 
         .input-area {
@@ -128,7 +128,6 @@
         .sub-val { font-weight: bold; color: #333; }
         .sub-feedback { font-size: 10px; display: block; margin-top: 1px; }
 
-        /* Botão de excluir */
         .btn-delete {
             position: absolute;
             right: 10px;
@@ -158,10 +157,8 @@
         <p>Olá, Gabriela! Vamos cuidar da saúde?</p>
     </div>
 
-    <div class="doses-container">
-        <div class="dose-box">NPH <b>10un</b></div>
-        <div class="dose-box">Regular <b>15un</b></div>
-        <div class="dose-box">Metf. <b>850mg</b></div>
+    <div class="doses-container" id="containerDosesHome">
+        <div class="dose-box" style="color:#999">Nenhuma dose cadastrada</div>
     </div>
 
     <div class="input-area">
@@ -186,18 +183,26 @@
 </div>
 
 <script>
-    // MANTENDO TODA A SUA INTELIGÊNCIA E CÁLCULOS ORIGINAIS
     const ALVO = 130;
     const FSI = 72;
     const ultimaGlicemiaPorPeriodo = {};
     const HOJE_STR = new Date().toLocaleDateString('pt-BR');
 
+    // Função para carregar as doses da tela de Ajustes
+    function carregarDoses() {
+        const dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+        const container = document.getElementById('containerDosesHome');
+        if(dbDoses.length > 0) {
+            container.innerHTML = dbDoses.map(m => `
+                <div class="dose-box">${m.nome} <b>${m.qtd}</b></div>
+            `).join('');
+        }
+    }
+
     function excluirRegistro(btn) {
         if(confirm("Deseja excluir esta medição?")) {
             const entry = btn.parentElement;
             const card = entry.closest('.group-card');
-            
-            // Se for a única medição no card, remove o card inteiro
             if (card.querySelectorAll('.main-entry, .sub-entry').length === 1) {
                 card.remove();
             } else {
@@ -284,6 +289,9 @@
         ultimaGlicemiaPorPeriodo[momento] = valor;
         document.getElementById('glicemia').value = "";
     }
+
+    // Inicia carregando as doses
+    window.onload = carregarDoses;
 </script>
 </body>
 </html>
