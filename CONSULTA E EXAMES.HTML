@@ -10,141 +10,59 @@
         .container { width: 100%; min-height: 100vh; padding-bottom: 30px; display: flex; flex-direction: column; }
         .header { background-color: var(--primaria); color: white; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 28px; }
-        
         .input-area { background-color: var(--lavanda); margin: 20px 15px 15px; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #e3d9ff; }
-        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; margin-left: 5px; }
-        
-        /* Ajuste para não encavalar os campos */
+        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; }
         .row { display: flex; gap: 10px; flex-wrap: wrap; }
         .row > div { flex: 1; min-width: 140px; }
-
-        input, select { padding: 12px; border-radius: 12px; border: 1px solid #ddd; outline: none; width: 100%; box-sizing: border-box; font-size: 14px; }
-        
-        button#btn-salvar { background-color: var(--primaria); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 5px; }
-        
-        .history-list { padding: 0 15px 20px; }
-        .group-card { background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; border-left: 6px solid var(--laranja); overflow: hidden; }
-        .group-header { padding: 10px 15px; font-weight: bold; font-size: 13px; color: var(--primaria); display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-        
-        .btn-excluir { background: #ffeded; color: #ff4444; border: none; border-radius: 8px; padding: 5px 10px; font-weight: bold; cursor: pointer; }
-        
+        input, select { padding: 12px; border-radius: 12px; border: 1px solid #ddd; width: 100%; box-sizing: border-box; font-size: 14px; }
+        button#btn-salvar { background-color: var(--primaria); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        .history-list { padding: 0 15px; }
+        .group-card { background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 15px; border-left: 6px solid var(--laranja); }
+        .group-header { padding: 10px 15px; font-weight: bold; font-size: 13px; color: var(--primaria); display: flex; justify-content: space-between; align-items: center; }
+        .btn-excluir { background: #ffeded; color: #ff4444; border: none; border-radius: 8px; padding: 5px 10px; font-weight: bold; }
         .main-entry { padding: 15px; }
-        .doc-name { font-size: 18px; font-weight: bold; color: #333; }
-        .info-row { font-size: 14px; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header"><h1>Consultas e Exames</h1><p>Agenda da Gabriela</p></div>
-    
+    <div class="header"><h1>Consultas e Exames</h1></div>
     <div class="input-area">
-        <label>Médico ou Especialidade</label>
-        <input type="text" id="medico" placeholder="Ex: Dr. João">
-        
+        <label>Médico / Especialidade</label><input type="text" id="medico" placeholder="Ex: Dr. João">
         <div class="row">
-            <div>
-                <label>Data</label>
-                <input type="date" id="data_consulta">
-            </div>
-            <div>
-                <label>Hora</label>
-                <input type="time" id="hora_consulta">
-            </div>
+            <div><label>Data</label><input type="date" id="data_consulta"></div>
+            <div><label>Hora</label><input type="time" id="hora_consulta"></div>
         </div>
-        
-        <label>Local</label>
-        <input type="text" id="local" placeholder="Endereço da clínica">
-        
         <label>Tipo</label>
-        <select id="tipo">
-            <option value="Consulta">🩺 Consulta</option>
-            <option value="Exame">🧪 Exame</option>
-        </select>
-        
+        <select id="tipo"><option value="Consulta">🩺 Consulta</option><option value="Exame">🧪 Exame</option></select>
         <button id="btn-salvar" onclick="salvarConsulta()">Salvar Agendamento</button>
     </div>
-    
     <div id="historicoConsultas" class="history-list"></div>
 </div>
-
 <script>
     let consultas = JSON.parse(localStorage.getItem('gabi_consultas_v1') || '[]');
-
     function salvarConsulta() {
         const medico = document.getElementById('medico').value;
         const data = document.getElementById('data_consulta').value;
         const hora = document.getElementById('hora_consulta').value;
-        const local = document.getElementById('local').value;
         const tipo = document.getElementById('tipo').value;
-
         if (!medico || !data || !hora) return alert("Preencha médico, data e hora!");
-
-        // Criar ID único e objeto de data para ordenação
-        const dataObjeto = new Date(`${data}T${hora}`);
-        
-        consultas.push({ 
-            id: Date.now(), 
-            medico, 
-            data, 
-            dataObjeto: dataObjeto.getTime(), 
-            hora, 
-            local, 
-            tipo 
-        });
-
-        // Ordenar por data (mais próximas primeiro)
-        consultas.sort((a, b) => a.dataObjeto - b.dataObjeto);
-        
+        consultas.push({ id: Date.now(), medico, data, hora, tipo });
+        consultas.sort((a, b) => new Date(a.data) - new Date(b.data));
         localStorage.setItem('gabi_consultas_v1', JSON.stringify(consultas));
-        
-        renderizarCards();
-        
-        // Limpar campos
-        document.getElementById('medico').value = "";
-        document.getElementById('data_consulta').value = "";
-        document.getElementById('hora_consulta').value = "";
-        document.getElementById('local').value = "";
+        render();
     }
-
-    function excluirConsulta(id) {
-        if(confirm("Deseja remover este agendamento?")) {
-            consultas = consultas.filter(c => c.id !== id);
-            localStorage.setItem('gabi_consultas_v1', JSON.stringify(consultas));
-            renderizarCards();
-        }
-    }
-
-    function renderizarCards() {
-        const lista = document.getElementById('historicoConsultas');
-        lista.innerHTML = "";
-
+    function excluir(id) { consultas = consultas.filter(c => c.id !== id); localStorage.setItem('gabi_consultas_v1', JSON.stringify(consultas)); render(); }
+    function render() {
+        const lista = document.getElementById('historicoConsultas'); lista.innerHTML = "";
         consultas.forEach(c => {
-            // Formatar a data para o padrão BR: DD/MM/AAAA
             const dataBr = c.data.split('-').reverse().join('/');
-            
-            const card = document.createElement('div');
-            card.className = 'group-card';
-            
+            const card = document.createElement('div'); card.className = 'group-card';
             if(c.tipo === "Exame") card.style.borderLeftColor = "var(--verde)";
-            
-            card.innerHTML = `
-                <div class="group-header">
-                    <span>📅 ${dataBr}</span>
-                    <button class="btn-excluir" onclick="excluirConsulta(${c.id})">Remover</button>
-                </div>
-                <div class="main-entry">
-                    <span class="doc-name">${c.medico}</span>
-                    <div class="info-row">⏰ ${c.hora} | 📍 ${c.local || 'Não informado'}</div>
-                    <div style="font-size: 11px; color: var(--primaria); font-weight: bold; margin-top: 5px;">
-                        ${c.tipo.toUpperCase()}
-                    </div>
-                </div>`;
+            card.innerHTML = `<div class="group-header"><span>📅 ${dataBr}</span><button class="btn-excluir" onclick="excluir(${c.id})">×</button></div><div class="main-entry"><b>${c.medico}</b><br>⏰ ${c.hora}</div>`;
             lista.appendChild(card);
         });
     }
-
-    // Carregar ao iniciar
-    renderizarCards();
+    render();
 </script>
 </body>
 </html>
