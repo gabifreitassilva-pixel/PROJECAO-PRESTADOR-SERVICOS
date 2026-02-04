@@ -1,14 +1,14 @@
-const CACHE_NAME = 'glicogabi-v4';
+const CACHE_NAME = 'glicogabi-v5';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
   'CONSULTA E EXAMES.HTML',
-  'HISTORICO.HTML',
+  'HISTÓRICO.HTML',
   'ESTOQUES.HTML',
   'AJUSTES.HTML',
   'LEMBRETES.HTML',
-  'ICONE.png',
-  'manifest.json'
+  'ÍCONE.PNG',
+  'MANIFEST.JSON'
 ];
 
 self.addEventListener('install', (e) => {
@@ -23,6 +23,16 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((res) => {
       return res || fetch(e.request);
+    })
+  );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
     })
   );
 });
