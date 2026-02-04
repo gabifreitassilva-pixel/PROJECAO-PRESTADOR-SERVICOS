@@ -3,108 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlicoGabi - Lançamentos</title>
+    <title>GlicoGabi - Home</title>
     <style>
-        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #fdfbff; margin: 0; padding: 20px; color: #333; padding-bottom: 80px; }
-        h2 { color: var(--primaria); text-align: center; }
-        .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid var(--primaria); position: relative; }
-        /* Estilo do Botão de Excluir */
-        .btn-excluir { position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        label { display: block; margin-top: 10px; font-weight: bold; color: var(--primaria); }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        .btn-salvar { background: var(--primaria); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; margin-top: 20px; font-weight: bold; cursor: pointer; }
-        .resultado { background: var(--lavanda); padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; font-weight: bold; color: var(--primaria); border: 1px solid var(--primaria); }
-        .historico-lista { margin-top: 20px; }
+        :root { --primaria: #7e57ff; --sucesso: #2ecc71; --alerta: #f1c40f; --perigo: #e74c3c; --lavanda: #f4f0ff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #fdfbff; margin: 0; padding: 20px; padding-bottom: 80px; color: #333; }
+        h2 { color: var(--primaria); text-align: center; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px; border-left: 6px solid var(--primaria); position: relative; }
+        
+        /* Botão de Excluir aprovado */
+        .btn-excluir { position: absolute; top: 12px; right: 12px; background: #ffeded; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.3s; }
+        .btn-excluir:hover { background: #ff4d4d; color: white; }
+
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--primaria); font-size: 14px; }
+        input, select { width: 100%; padding: 14px; margin-top: 8px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--primaria); outline: none; }
+        .btn-salvar { background: var(--primaria); color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; margin-top: 25px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(126, 87, 255, 0.3); }
+        
+        .resultado-container { display: none; margin-top: 20px; padding: 20px; border-radius: 15px; text-align: center; animation: fadeIn 0.5s; }
+        .frase-motivacional { font-style: italic; margin-top: 10px; font-size: 14px; color: #666; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <h2>📊 Lançamentos</h2>
+
+    <h2>🌸 Olá, Gabi!</h2>
+
     <div class="card">
-        <label>Glicemia (mg/dL):</label>
-        <input type="number" id="glicemia" placeholder="Ex: 120">
-        <label>Refeição:</label>
+        <label>Glicemia Atual (mg/dL):</label>
+        <input type="number" id="glicemia" placeholder="000">
+
+        <label>Momento da Medição:</label>
         <select id="refeicao">
-            <option value="Jejum">Jejum</option>
-            <option value="Pré-Prandial">Pré-Prandial</option>
-            <option value="Pós-Prandial">Pós-Prandial</option>
-            <option value="Antes de Dormir">Antes de Dormir</option>
+            <option value="Jejum">🌙 Jejum</option>
+            <option value="Pré-Prandial">🍽️ Pré-Prandial (Antes de comer)</option>
+            <option value="Pós-Prandial">🍕 Pós-Prandial (2h após comer)</option>
+            <option value="Antes de Dormir">🛌 Antes de Dormir</option>
         </select>
-        <label>Carboidratos (g):</label>
-        <input type="number" id="carbos" placeholder="Ex: 45">
-        <button class="btn-salvar" onclick="calcularESalvar()">Calcular e Salvar</button>
+
+        <label>Total de Carboidratos (g):</label>
+        <input type="number" id="carbos" placeholder="0g">
+
+        <button class="btn-salvar" onclick="calcularTudo()">Calcular e Registrar</button>
     </div>
-    <div id="resultadoInsulina" class="resultado" style="display:none;"></div>
-    <div class="historico-lista" id="listaMedicoes"></div>
+
+    <div id="feedback" class="resultado-container">
+        <div id="doseTexto" style="font-size: 20px; font-weight: bold;"></div>
+        <div id="fraseTexto" class="frase-motivacional"></div>
+    </div>
+
+    <div id="listaMedicoes"></div>
 
     <script>
-        function calcularESalvar() {
-            const glicemia = parseFloat(document.getElementById('glicemia').value);
-            const carbos = parseFloat(document.getElementById('carbos').value) || 0;
-            const refeicao = document.getElementById('refeicao').value;
+        function calcularTudo() {
+            const g = parseFloat(document.getElementById('glicemia').value);
+            const c = parseFloat(document.getElementById('carbos').value) || 0;
+            const ref = document.getElementById('refeicao').value;
 
-            if (!glicemia) { alert("Por favor, insira a glicemia."); return; }
+            if (!g) { alert("Gabi, insira sua glicemia para eu te ajudar!"); return; }
 
-            // PUXA OS DADOS DE AJUSTES (Lógica original restaurada)
-            const ajustes = JSON.parse(localStorage.getItem('ajustesGlicoGabi')) || {
-                meta: 100, sensibilidade: 50, relacao: 15
-            };
+            // PUXA OS DADOS REAIS DE AJUSTES
+            const ajustes = JSON.parse(localStorage.getItem('ajustesGlicoGabi')) || { meta: 100, sensibilidade: 50, relacao: 15 };
 
-            let doseCorrecao = Math.max(0, (glicemia - ajustes.meta) / ajustes.sensibilidade);
-            let doseCarbo = carbos / ajustes.relacao;
+            let doseCorrecao = Math.max(0, (g - ajustes.meta) / ajustes.sensibilidade);
+            let doseCarbo = c / ajustes.relacao;
             let doseTotal = Math.round(doseCorrecao + doseCarbo);
 
-            const agora = new Date();
-            const novaMedicao = {
-                glicemia, carbos, doseTotal, refeicao,
-                data: agora.toLocaleDateString('pt-BR'),
-                hora: agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})
-            };
+            const feedback = document.getElementById('feedback');
+            let cor = var(--sucesso);
+            let frase = "Muito bem! Tudo sob controle. ✨";
 
-            let medicoes = JSON.parse(localStorage.getItem('medicoes')) || [];
-            medicoes.unshift(novaMedicao);
-            localStorage.setItem('medicoes', JSON.stringify(medicoes));
+            if (g < 70) { cor = "#e67e22"; frase = "Atenção Gabi, glicemia baixa! Coma 15g de carbo rápido. 🍊"; }
+            else if (g > 180) { cor = var(--perigo); frase = "Está um pouco alta, mas a insulina vai ajustar. Beba água! 💧"; }
 
-            // Atualiza estoque
-            let estoque = parseFloat(localStorage.getItem('estoqueInsulina')) || 0;
-            localStorage.setItem('estoqueInsulina', Math.max(0, estoque - doseTotal));
+            feedback.style.display = "block";
+            feedback.style.backgroundColor = cor + "20";
+            feedback.style.color = cor;
+            feedback.style.border = `1px solid ${cor}`;
+            document.getElementById('doseTexto').innerText = `Aplicar: ${doseTotal} unidades`;
+            document.getElementById('fraseTexto').innerText = frase;
 
-            document.getElementById('resultadoInsulina').style.display = 'block';
-            document.getElementById('resultadoInsulina').innerText = `Aplicar: ${doseTotal} unidades de Insulina`;
-            
-            exibirMedicoes();
-            document.getElementById('glicemia').value = '';
-            document.getElementById('carbos').value = '';
+            const nova = { g, c, doseTotal, ref, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) };
+            let historico = JSON.parse(localStorage.getItem('medicoes')) || [];
+            historico.unshift(nova);
+            localStorage.setItem('medicoes', JSON.stringify(historico));
+
+            // Baixa no estoque
+            let est = parseFloat(localStorage.getItem('estoqueInsulina')) || 0;
+            localStorage.setItem('estoqueInsulina', Math.max(0, est - doseTotal));
+
+            setTimeout(exibir, 500);
         }
 
-        function exibirMedicoes() {
-            const lista = document.getElementById('listaMedicoes');
-            const medicoes = JSON.parse(localStorage.getItem('medicoes')) || [];
-            lista.innerHTML = '<h3>Últimos Registros</h3>';
+        function exibir() {
+            const container = document.getElementById('listaMedicoes');
+            const dados = JSON.parse(localStorage.getItem('medicoes')) || [];
+            container.innerHTML = '<h3 style="color:var(--primaria); margin-top:30px;">Histórico Recente</h3>';
 
-            medicoes.forEach((item, index) => {
+            dados.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'card';
-                // BOTÃO DE EXCLUIR INCLUÍDO NO CARD
                 div.innerHTML = `
-                    <button class="btn-excluir" onclick="excluirRegistro(${index})">EXCLUIR</button>
-                    <p><strong>Glicemia:</strong> ${item.glicemia} mg/dL (${item.refeicao})</p>
-                    <p><strong>Insulina:</strong> ${item.doseTotal} u</p>
-                    <small>${item.data} às ${item.hora}</small>
+                    <button class="btn-excluir" onclick="apagar(${index})">EXCLUIR</button>
+                    <p style="margin:0; font-weight:bold;">${item.g} mg/dL <span style="font-weight:normal; font-size:12px; color:#666;">(${item.ref})</span></p>
+                    <p style="margin:5px 0; color:var(--primaria);">💉 ${item.doseTotal} unidades de insulina</p>
+                    <small style="color:#999;">${item.data} às ${item.hora}</small>
                 `;
-                lista.appendChild(div);
+                container.appendChild(div);
             });
         }
 
-        function excluirRegistro(index) {
-            if (confirm("Deseja apagar este registro?")) {
-                let medicoes = JSON.parse(localStorage.getItem('medicoes')) || [];
-                medicoes.splice(index, 1);
-                localStorage.setItem('medicoes', JSON.stringify(medicoes));
-                exibirMedicoes();
+        function apagar(i) {
+            if (confirm("Gabi, quer mesmo apagar esse registro?")) {
+                let dados = JSON.parse(localStorage.getItem('medicoes')) || [];
+                dados.splice(i, 1);
+                localStorage.setItem('medicoes', JSON.stringify(dados));
+                exibir();
             }
         }
-        window.onload = exibirMedicoes;
+
+        window.onload = exibir;
     </script>
 </body>
 </html>
