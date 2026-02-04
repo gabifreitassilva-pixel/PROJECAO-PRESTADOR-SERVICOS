@@ -1,14 +1,14 @@
-const CACHE_NAME = 'glicogabi-v6'; // Mudei para v6 para o celular forçar a atualização
+const CACHE_NAME = 'glicogabi-v7';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
   'CONSULTA E EXAMES.HTML',
-  'HISTÓRICO.HTML', // CORRIGIDO: Agora com acento para bater com seu arquivo
+  'HISTÓRICO.HTML',
   'ESTOQUES.HTML',
   'AJUSTES.HTML',
   'LEMBRETES.HTML',
-  'ÍCONE.PNG',      // CORRIGIDO: Nome exato da sua imagem vertical
-  'MANIFEST.JSON'   // CORRIGIDO: Nome em maiúsculo conforme sua pasta
+  'ÍCONE.PNG',
+  'MANIFEST.JSON'
 ];
 
 self.addEventListener('install', (e) => {
@@ -27,7 +27,6 @@ self.addEventListener('fetch', (e) => {
   );
 });
 
-// Limpa o cache antigo para garantir que as novas cores e textos apareçam
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
