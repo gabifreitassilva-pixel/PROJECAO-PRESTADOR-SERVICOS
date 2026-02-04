@@ -24,6 +24,8 @@
         .history-section { padding: 0 15px; }
         .group-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 6px solid var(--primaria); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .group-header { font-weight: bold; color: var(--primaria); margin-bottom: 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .main-val { font-size: 24px; font-weight: bold; color: #333; margin: 5px 0; }
         .feedback-txt { font-size: 13px; font-weight: bold; margin-top: 5px; display: block; }
         .excelente { color: var(--verde); }
         .alerta { color: var(--laranja); }
@@ -44,6 +46,7 @@
             <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro" onchange="carregarHistoricoPorData()"></div>
             <div style="flex: 1;"><label>Hora</label><input type="time" id="hora-retro"></div>
         </div>
+        
         <label>Qual o momento?</label>
         <select id="momento">
             <option value="Jejum">🌅 Jejum</option>
@@ -54,10 +57,13 @@
             <option value="Depois da janta">🍕 Depois da janta</option>
             <option value="Antes de Dormir">🌙 Antes de Dormir</option>
         </select>
+
         <label>Valor da Glicemia (mg/dL)</label>
         <input type="number" id="glicemia" placeholder="Ex: 110" inputmode="numeric">
+
         <button class="btn-registrar" onclick="registrar()">Registrar Glicemia</button>
     </div>
+
     <div class="history-section" id="historico"></div>
 </div>
 
@@ -100,7 +106,7 @@
         const dataRetro = document.getElementById('data-retro').value;
         const horaRetro = document.getElementById('hora-retro').value;
 
-        if (!valor) return alert("Insira o valor!");
+        if (!valor) return alert("Por favor, insira o valor da glicemia.");
 
         const agora = new Date();
         const hojeStr = agora.toISOString().split('T')[0];
@@ -108,43 +114,63 @@
         const horaFinal = horaRetro || agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
         let historicoCompleto = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
-        historicoCompleto.push({ dia: parseInt(dataReg.split('-')[2]), data: dataReg, valor, momento, hora: horaFinal });
+        historicoCompleto.push({ 
+            dia: parseInt(dataReg.split('-')[2]), 
+            data: dataReg, 
+            valor, 
+            momento, 
+            hora: horaFinal 
+        });
         localStorage.setItem('gabi_historico_glicemias', JSON.stringify(historicoCompleto));
 
-        // Recarrega a lista para mostrar o novo registro imediatamente
         carregarHistoricoPorData();
         document.getElementById('glicemia').value = "";
     }
 
     function exibirCardNaTela(valor, momento, data, hora) {
         const historicoDiv = document.getElementById('historico');
-        let feedback = ""; let classe = "";
-        const subiu = ultimaGlicemiaPorPeriodo[momento] && valor > ultimaGlicemiaPorPeriodo[momento];
-
-        if (valor < 70) { feedback = "Hipoglicemia!"; classe = "perigo"; }
-        else if (valor <= 130) { feedback = "Excelente!"; classe = "excelente"; }
-        else if (valor <= 180) { feedback = "Um pouco alto."; classe = "alerta"; }
-        else {
-            if (!ultimaGlicemiaPorPeriodo[momento] || subiu) {
-                let unidades = Math.ceil((valor - ALVO) / FSI);
-                feedback = `Sugestão: +${unidades}un Regular.`;
-            } else { feedback = "Aguarde a dose anterior."; }
+        let feedback = "";
+        let classe = "";
+        
+        // RECUPERANDO AS MENSAGENS QUE HAVIAM SIDO PERDIDAS:
+        if (valor < 70) {
+            feedback = "Hipoglicemia! Consumir carboidrato rápido.";
+            classe = "perigo";
+        } else if (valor <= 130) {
+            feedback = "Valor excelente! Mantenha o foco.";
+            classe = "excelente";
+        } else if (valor <= 180) {
+            feedback = "Um pouco alto. Beba água e monitore.";
+            classe = "alerta";
+        } else {
+            // Lógica de correção com FSI e Alvo
+            let unidades = Math.ceil((valor - ALVO) / FSI);
+            feedback = `Elevada. Sugestão: +${unidades}un de Insulina Regular.`;
             classe = "perigo";
         }
 
         const cardId = `card-${momento.replace(/\s+/g, '-')}`;
         let card = document.getElementById(cardId);
+
         if (!card) {
-            card = document.createElement('div'); card.id = cardId; card.className = 'group-card';
-            card.innerHTML = `<div class="group-header">${momento}</div><div class="main-val">${valor} mg/dL</div><div class="feedback-txt ${classe}">${feedback}</div><div class="sub-list"></div>`;
+            card = document.createElement('div');
+            card.id = cardId;
+            card.className = 'group-card';
+            card.innerHTML = `
+                <div class="group-header">${momento}</div>
+                <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
+                <div class="feedback-txt ${classe}">${feedback}</div>
+                <div class="sub-list"></div>`;
             historicoDiv.prepend(card);
         } else {
-            card.querySelector('.sub-list').innerHTML += `<div>└ ${hora} - <b>${valor} mg/dL</b></div>`;
+            const subList = card.querySelector('.sub-list');
+            subList.innerHTML += `<div>└ ${hora} - <b>${valor} mg/dL</b></div>`;
         }
         ultimaGlicemiaPorPeriodo[momento] = valor;
     }
 
     window.onload = () => { carregarDoses(); carregarHistoricoPorData(); };
 </script>
+
 </body>
 </html>
