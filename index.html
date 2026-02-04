@@ -6,7 +6,7 @@
     <title>GlicoGabi</title>
     
     <link rel="manifest" href="MANIFEST.JSON">
-    <link rel="apple-touch-icon" href="ICONE.PNG">
+    <link rel="apple-touch-icon" href="ÍCONE.PNG">
     <meta name="theme-color" content="#7e57ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -29,7 +29,7 @@
             z-index: 10000; transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
         }
 
-        #splash img { width: 180px; height: 180px; border-radius: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        #splash img { width: 180px; height: 180px; border-radius: 40px; }
         #splash h1 { color: white; margin-top: 20px; font-size: 24px; letter-spacing: 2px; }
 
         /* INTERFACE PRINCIPAL */
@@ -55,7 +55,7 @@
 <body>
 
     <div id="splash">
-        <img src="ICONE.png" alt="GlicoGabi">
+        <img src="ÍCONE.PNG" alt="GlicoGabi">
         <h1>GLICOGABI</h1>
     </div>
 
@@ -72,7 +72,7 @@
     </div>
 
     <script>
-        // EFEITO DE ABERTURA: FECHA O SPLASH APÓS 2 SEGUNDOS
+        // Fecha a tela de abertura após 2 segundos
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('splash').style.transform = 'translateY(-100%)';
@@ -91,4 +91,3 @@
     </script>
 </body>
 </html>
-
