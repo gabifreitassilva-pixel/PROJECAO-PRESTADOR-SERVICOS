@@ -10,20 +10,27 @@
         .container { width: 100%; background: white; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; padding-bottom: 30px; }
         .header { background-color: var(--primaria); color: white; padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .header h1 { margin: 0; font-size: 32px; font-weight: bold; }
+        .header p { margin: 10px 0 0; font-size: 16px; opacity: 0.9; }
         .doses-container { display: flex; justify-content: center; gap: 10px; padding: 10px 15px; }
         .dose-box { border: 1px solid #eee; border-radius: 10px; padding: 5px; text-align: center; flex: 1; font-size: 11px; }
         .input-area { background-color: #f4f0ff; margin: 0 15px 15px; padding: 15px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; }
         select, input { padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px; }
-        .btn-salvar { background-color: var(--primaria); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .group-card { background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid var(--primaria); position: relative; overflow: hidden; }
-        .btn-excluir { position: absolute; top: 8px; right: 8px; background: #ffeded; color: #f44336; border: 1px solid #f44336; padding: 3px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; cursor: pointer; }
+        button { background-color: var(--primaria); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* Estilo do Botão Excluir */
+        .btn-excluir { float: right; background: none; border: none; color: #ff5252; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+
+        .group-card { background: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 5px solid var(--primaria); overflow: hidden; padding-bottom: 5px; }
         .group-header { padding: 8px 15px; font-weight: bold; background: #fafafa; font-size: 16px; color: #333; }
-        .main-entry { padding: 10px 15px; }
+        .main-entry { padding: 10px 15px; position: relative; }
         .main-val { font-size: 24px; font-weight: bold; color: var(--laranja); }
         .main-feedback { font-size: 13px; margin-top: 3px; font-weight: bold; }
-        .hipo, .hiper { color: var(--vermelho); }
+        .sub-entry { padding: 5px 15px; border-top: 1px dashed #eee; margin-top: 5px; }
+        .sub-time-row { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; }
+        .hipo { color: var(--vermelho); }
         .excelente { color: var(--verde); }
         .alerta { color: var(--laranja); }
+        .hiper { color: var(--vermelho); }
     </style>
 </head>
 <body>
@@ -46,21 +53,19 @@
             <option value="Madrugada">🌙 Madrugada</option>
         </select>
         <input type="number" id="glicemia" placeholder="mg/dL" inputmode="numeric">
-        <button class="btn-salvar" onclick="salvar()">Salvar Registro</button>
+        <button onclick="salvar()">Salvar Registro</button>
     </div>
-
     <div id="historico" class="history-list"></div>
 </div>
 
 <script>
-    let ultimaGlicemiaPorPeriodo = {};
+    const ultimaGlicemiaPorPeriodo = {};
 
     function carregarAjustes() {
+        // Puxa os dados salvos na aba Ajustes
         const ajustes = JSON.parse(localStorage.getItem('ajustesGlicoGabi')) || {
             meta: 130, sensibilidade: 72, nph: "10un", regular: "15un", metformina: "850mg"
         };
-        
-        // Atualiza os medicamentos no topo
         document.getElementById('doses-dinamicas').innerHTML = `
             <div class="dose-box">NPH <b>${ajustes.nph}</b></div>
             <div class="dose-box">Regular <b>${ajustes.regular}</b></div>
@@ -75,59 +80,54 @@
         if (!valor) return;
 
         const ajustes = carregarAjustes();
-        let feedback = ""; let classe = "";
-        const subiu = ultimaGlicemiaPorPeriodo[momento] && valor > ultimaGlicemiaPorPeriodo[momento];
+        const agora = new Date();
+        const horaFinal = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
 
-        if (valor < 70) { feedback = "Hipoglicemia! Consumir carbo rápido."; classe = "hipo"; }
-        else if (valor <= ajustes.meta) { feedback = "Valor excelente! Continue assim."; classe = "excelente"; }
-        else if (valor <= 180) { feedback = "Valor um pouco alto. Beba água."; classe = "alerta"; }
+        let feedback = ""; let classe = "";
+        const primeiraMedida = !ultimaGlicemiaPorPeriodo[momento];
+        const subiu = !primeiraMedida && valor > ultimaGlicemiaPorPeriodo[momento];
+
+        if (valor < 70) { feedback = "Hipoglicemia! Consumir carboidrato rápido."; classe = "hipo"; }
+        else if (valor <= ajustes.meta) { feedback = "Valor excelente! Continue cuidando."; classe = "excelente"; }
+        else if (valor <= 180) { feedback = "Valor um pouco alto. Hidrate-se."; classe = "alerta"; }
         else {
             let correcao = Math.ceil((valor - ajustes.meta) / ajustes.sensibilidade);
-            feedback = subiu || !ultimaGlicemiaPorPeriodo[momento] ? `Elevado. Sugestão: +${correcao}un Regular.` : "Aguarde a dose anterior e hidrate.";
+            feedback = (primeiraMedida || subiu) ? `Valor elevado. Sugestão: +${correcao}un Regular.` : "Aguarde a dose anterior e hidrate.";
             classe = "hiper";
         }
 
-        const registro = { valor, momento, feedback, classe, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) };
-        let registros = JSON.parse(localStorage.getItem('medicoes_v2')) || [];
-        registros.unshift(registro);
-        localStorage.setItem('medicoes_v2', JSON.stringify(registros));
-        
+        let cardId = `card-${momento.replace(/\s+/g, '')}`;
+        let card = document.getElementById(cardId);
+
+        if (!card) {
+            card = document.createElement('div');
+            card.id = cardId; card.className = 'group-card';
+            card.innerHTML = `
+                <div class="group-header">${momento}</div>
+                <div class="content">
+                    <div class="main-entry">
+                        <button class="btn-excluir" onclick="this.parentElement.parentElement.parentElement.remove()">Excluir</button>
+                        <div style="font-size:10px; color:#999;">${agora.toLocaleDateString('pt-BR')} - ${horaFinal}</div>
+                        <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
+                        <div class="main-feedback ${classe}">${feedback}</div>
+                    </div>
+                    <div class="sub-list"></div>
+                </div>`;
+            document.getElementById('historico').appendChild(card);
+        } else {
+            const subList = card.querySelector('.sub-list');
+            const subItem = document.createElement('div');
+            subItem.className = 'sub-entry';
+            subItem.innerHTML = `
+                <button class="btn-excluir" onclick="this.parentElement.remove()">Excluir</button>
+                <div class="sub-time-row"><span>└ ${horaFinal} -</span><b>${valor} mg/dL</b></div>
+                <span class="sub-feedback ${classe}">${feedback}</span>`;
+            subList.appendChild(subItem);
+        }
         ultimaGlicemiaPorPeriodo[momento] = valor;
         document.getElementById('glicemia').value = "";
-        exibir();
     }
-
-    function exibir() {
-        const container = document.getElementById('historico');
-        const registros = JSON.parse(localStorage.getItem('medicoes_v2')) || [];
-        container.innerHTML = "";
-
-        registros.forEach((reg, index) => {
-            const card = document.createElement('div');
-            card.className = 'group-card';
-            card.innerHTML = `
-                <button class="btn-excluir" onclick="excluir(${index})">EXCLUIR</button>
-                <div class="group-header">${reg.momento}</div>
-                <div class="main-entry">
-                    <div style="font-size:10px; color:#999;">${reg.data} - ${reg.hora}</div>
-                    <div class="main-val">${reg.valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
-                    <div class="main-feedback ${reg.classe}">${reg.feedback}</div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function excluir(index) {
-        if (confirm("Gabi, deseja apagar este registro?")) {
-            let registros = JSON.parse(localStorage.getItem('medicoes_v2')) || [];
-            registros.splice(index, 1);
-            localStorage.setItem('medicoes_v2', JSON.stringify(registros));
-            exibir();
-        }
-    }
-
-    window.onload = () => { carregarAjustes(); exibir(); };
+    window.onload = carregarAjustes;
 </script>
 </body>
 </html>
