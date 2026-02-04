@@ -8,70 +8,79 @@
     <meta name="theme-color" content="#7e57ff">
     <style>
         :root { --primaria: #7e57ff; }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body, html { 
             margin: 0; padding: 0; height: 100%; 
-            background-color: #f0f0f0; display: flex; justify-content: center;
+            background-color: var(--primaria); /* Roxo até o final */
+            display: flex; justify-content: center;
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden; /* Impede scroll na página principal */
+            overflow: hidden;
         }
 
-        /* Estrutura Principal que ocupa a tela toda */
         .outer-frame {
             background-color: var(--primaria);
             width: 100%; max-width: 450px; height: 100vh;
             display: flex; flex-direction: column;
-            overflow: hidden;
         }
 
-        /* Área Branca (Conteúdo) no TOPO */
         .content-container {
             flex: 1; 
             background: white; 
-            border-radius: 0 0 25px 25px; /* Arredondado apenas embaixo */
+            border-radius: 0 0 25px 25px; 
             overflow: hidden; 
-            position: relative;
         }
 
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* MENU DE NAVEGAÇÃO FIXO EM BAIXO */
+        /* MENU DE NAVEGAÇÃO INFERIOR ESTILO APP */
         .nav-tabs {
             display: flex; 
-            overflow-x: auto; 
-            padding: 12px 10px; 
-            gap: 8px;
-            background: var(--primaria);
-            scrollbar-width: none; /* Esconde scroll no Firefox */
-            -webkit-overflow-scrolling: touch;
+            justify-content: space-between; /* Distribui os 6 botões igualmente */
             align-items: center;
-            justify-content: flex-start;
+            background: var(--primaria);
+            padding: 8px 5px 12px 5px; /* Espaço para o nome não cortar embaixo */
+            height: 75px;
         }
 
-        .nav-tabs::-webkit-scrollbar { display: none; } /* Esconde scroll no Chrome/Safari */
-
-        /* Botões ajustados para não espremer o texto */
         .tab-btn {
-            background: rgba(255,255,255,0.2); 
+            background: none; 
             border: none; 
             color: white;
-            padding: 8px 14px; 
-            border-radius: 20px; 
-            white-space: nowrap; 
-            font-weight: bold; 
-            font-size: 12px; 
             cursor: pointer;
             display: flex;
+            flex-direction: column; /* Ícone em cima, texto embaixo */
             align-items: center;
-            gap: 4px;
-            flex-shrink: 0; /* IMPEDE QUE O BOTÃO SEJA ESPREMIDO */
+            justify-content: center;
+            flex: 1; 
+            min-width: 0;
+            opacity: 0.6;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        /* Ajuste do Ícone */
+        .tab-btn i {
+            font-size: 20px; 
+            margin-bottom: 4px;
+            font-style: normal;
+        }
+
+        /* Ajuste do Texto */
+        .tab-btn span {
+            font-size: 8.5px; /* Tamanho calculado para caber os 6 nomes */
+            font-weight: 600;
+            white-space: nowrap;
+            text-transform: none;
         }
 
         .tab-btn.active { 
-            background: white; 
-            color: var(--primaria); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            opacity: 1;
+        }
+
+        /* Indicador visual para a aba ativa */
+        .tab-btn.active i {
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -83,28 +92,34 @@
         </div>
 
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="navegar('home.HTML', this)">🏠 Home</button>
-            <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">🩺 Consultas</button>
-            <button class="tab-btn" onclick="navegar('historico.HTML', this)">📅 Histórico</button>
-            <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">📦 Estoque</button>
-            <button class="tab-btn" onclick="navegar('ajuste .html', this)">⚙️ Ajustes</button>
-            <button class="tab-btn" onclick="navegar('lembretes .html', this)">🔔 Lembretes</button>
+            <button class="tab-btn active" onclick="navegar('home.html', this)">
+                <i>🏠</i><span>Home</span>
+            </button>
+            <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">
+                <i>🩺</i><span>Consultas</span>
+            </button>
+            <button class="tab-btn" onclick="navegar('historico.HTML', this)">
+                <i>📅</i><span>Histórico</span>
+            </button>
+            <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">
+                <i>📦</i><span>Estoque</span>
+            </button>
+            <button class="tab-btn" onclick="navegar('ajuste.html', this)">
+                <i>⚙️</i><span>Ajustes</span>
+            </button>
+            <button class="tab-btn" onclick="navegar('lembretes .html', this)">
+                <i>🔔</i><span>Lembretes</span>
+            </button>
         </div>
     </div>
 
     <script>
         function navegar(url, btn) {
             document.getElementById('janela').src = url;
-            
-            // Gerencia classe ativa
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            // Faz o scroll automático para o botão clicado aparecer todo
-            btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
 
-        // Registro de Service Worker para PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
