@@ -5,253 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlicoGabi</title>
     <style>
-        :root {
-            --primaria: #7e57ff;
-            --laranja: #ff9800;
-            --verde: #4caf50;
-            --vermelho: #f44336;
-        }
-
-        /* AJUSTE PARA TELA INTEIRA: Fundo branco e removemos a moldura externa */
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: white; /* Ajustado para ser interno ao index */
-            margin: 0;
-            padding: 0;
-            display: block; /* Ocupa a largura total do celular */
-        }
-
-        /* Mantemos o container original, mas agora ele é 100% da largura */
-        .container {
-            width: 100%;
-            background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            padding-bottom: 30px; /* Espaço para não bater no menu do index */
-        }
-
-        /* --- MANTENDO TODOS OS SEUS ESTILOS ORIGINAIS ABAIXO --- */
-        .header {
-            background-color: var(--primaria);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header h1 { margin: 0; font-size: 32px; font-weight: bold; }
-        .header p { margin: 10px 0 0; font-size: 16px; opacity: 0.9; }
-        
-        .doses-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 15px;
-        }
-
-        .dose-box {
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 5px;
-            text-align: center;
-            flex: 1;
-            font-size: 11px;
-        }
-
-        .input-area {
-            background-color: #f4f0ff;
-            margin: 0 15px 15px;
-            padding: 15px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        select, input {
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-        }
-
-        .retro-row { display: flex; gap: 8px; }
-        .retro-row input { flex: 1; font-size: 11px; }
-
-        button {
-            background-color: var(--primaria);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .history-list { padding: 0 15px 20px; }
-
-        .group-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 12px;
-            border-left: 5px solid #ff5252;
-            overflow: hidden;
-            padding-bottom: 5px;
-        }
-
-        .group-header {
-            padding: 8px 15px;
-            font-weight: bold;
-            background: #fafafa;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .main-entry { padding: 10px 15px; }
-        .main-val { font-size: 24px; font-weight: bold; color: var(--laranja); }
-        .main-feedback { font-size: 13px; margin-top: 3px; font-weight: bold; color: var(--laranja); }
-
-        .sub-entry {
-            padding: 5px 15px;
-            border-top: 1px dashed #eee;
-            margin-top: 5px;
-        }
-        .sub-time-row { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; }
-        .sub-val { font-weight: bold; color: #333; }
-        .sub-feedback { font-size: 10px; display: block; margin-top: 1px; }
-
-        .hipo { color: var(--vermelho); }
-        .excelente { color: var(--verde); }
-        .alerta { color: var(--laranja); }
-        .hiper { color: var(--vermelho); }
+        :root { --primaria: #7e57ff; --laranja: #ff9800; --verde: #4caf50; --vermelho: #f44336; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: white; margin: 0; padding: 0; display: block; }
+        .container { width: 100%; background: white; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; padding-bottom: 30px; }
+        .header { background-color: var(--primaria); color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 32px; letter-spacing: 1px; }
+        .input-area { background-color: #f4f0ff; margin: -20px 15px 15px; padding: 25px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; margin-left: 5px; }
+        input, select { padding: 15px; border-radius: 15px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        button { background-color: var(--laranja); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .history-section { padding: 0 15px; }
+        .section-title { font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase; margin: 15px 5px 10px; display: flex; align-items: center; gap: 8px; }
+        .group-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
+        .group-header { font-weight: bold; color: var(--primaria); border-bottom: 1px solid #f4f0ff; padding-bottom: 8px; margin-bottom: 10px; font-size: 14px; }
+        .main-val { font-size: 24px; font-weight: bold; color: #333; }
+        .main-feedback { font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; width: fit-content; }
+        .feedback-bom { background-color: #e8f5e9; color: var(--verde); }
+        .feedback-alerta { background-color: #fff3e0; color: var(--laranja); }
+        .feedback-perigo { background-color: #ffebee; color: var(--vermelho); }
+        .sub-list { margin-top: 10px; padding-left: 10px; border-left: 2px solid #f4f0ff; font-size: 13px; }
+        #listaDosesHome { margin-top: 5px; border-top: 1px solid #e3d9ff; padding-top: 10px; }
+        .dose-item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="header">
-        <svg width="50" height="50" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
-            <path d="M7 9H9V11H7V9ZM11 7H13V13H11V7ZM15 9H17V11H15V9Z" fill="#7e57ff"/>
-        </svg>
-        <h1>GlicoGabi</h1>
-        <p>Olá, Gabriela! Vamos cuidar da saúde?</p>
-    </div>
-
-    <div class="doses-container">
-        <div class="dose-box">NPH <b>10un</b></div>
-        <div class="dose-box">Regular <b>15un</b></div>
-        <div class="dose-box">Metf. <b>850mg</b></div>
-    </div>
-
+    <div class="header"><h1>GlicoGabi</h1></div>
     <div class="input-area">
-        <select id="momento">
-            <option value="Jejum">🌅 Jejum</option>
-            <option value="Pós café">☕ Pós café da manhã</option>
-            <option value="Antes do almoço">🥗 Antes do almoço</option>
-            <option value="Depois do almoço">🍛 Depois do almoço</option>
-            <option value="Antes da janta">🍽️ Antes da janta</option>
-            <option value="Depois da janta">🍕 Depois da janta</option>
-            <option value="Madrugada">🌙 Madrugada</option>
-        </select>
-        <input type="number" id="glicemia" placeholder="mg/dL" inputmode="numeric">
-        <div class="retro-row">
-            <input type="date" id="data_retro">
-            <input type="time" id="hora_retro">
+        <div class="input-group"><label>Glicemia (mg/dL)</label><input type="number" id="glicemia" placeholder="Ex: 110" inputmode="numeric"></div>
+        <div class="input-group"><label>Momento do Dia</label>
+            <select id="momento">
+                <option value="Jejum">Jejum</option>
+                <option value="Pré-Almoço">Pré-Almoço</option>
+                <option value="Pós-Almoço">Pós-Almoço</option>
+                <option value="Pré-Jantar">Pré-Jantar</option>
+                <option value="Pós-Jantar">Pós-Jantar</option>
+                <option value="Antes de Dormir">Antes de Dormir</option>
+            </select>
         </div>
-        <button onclick="salvar()">Salvar Registro</button>
+        <button onclick="registrar()">Salvar Glicemia</button>
+        <div id="listaDosesHome"></div>
     </div>
-
-    <div id="historico" class="history-list"></div>
+    <div class="history-section"><div class="section-title">📊 Histórico de Hoje</div><div id="historico"></div></div>
 </div>
-
 <script>
-    // MANTENDO TODA A SUA INTELIGÊNCIA E CÁLCULOS ORIGINAIS
-    const ALVO = 130;
-    const FSI = 72;
-    const ultimaGlicemiaPorPeriodo = {};
-    const HOJE_STR = new Date().toLocaleDateString('pt-BR');
+    function carregarDoses() {
+        const dados = localStorage.getItem('gabi_ajustes_vFinal');
+        if (dados) {
+            const doses = JSON.parse(dados);
+            document.getElementById('listaDosesHome').innerHTML = '<label>Doses Atuais:</label>' + 
+                doses.map(d => `<div class="dose-item"><span>${d.nome}</span><b>${d.qtd}</b></div>`).join('');
+        }
+    }
+    window.onload = carregarDoses;
 
-    function salvar() {
-        const valor = parseInt(document.getElementById('glicemia').value);
+    function registrar() {
+        const valor = document.getElementById('glicemia').value;
         const momento = document.getElementById('momento').value;
-        const dRetro = document.getElementById('data_retro').value;
-        const hRetro = document.getElementById('hora_retro').value;
-
-        if (!valor) return;
-
+        if (!valor) return alert("Digite o valor!");
+        
         const agora = new Date();
-        const dataRegistro = dRetro ? dRetro.split('-').reverse().join('/') : agora.toLocaleDateString('pt-BR');
-        const horaFinal = hRetro || (agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0'));
+        const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        // SALVA PARA O RELATÓRIO
+        let hist = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        hist.push({ dia: agora.getDate(), valor, momento, hora });
+        localStorage.setItem('gabi_historico_glicemias', JSON.stringify(hist));
 
-        if (dataRegistro !== HOJE_STR) {
-            alert("Salvo no histórico!");
-            return; 
-        }
+        // VISUAL NA TELA
+        let fb = "Normal"; let cl = "feedback-bom";
+        if (valor < 70) { fb = "Hipoglicemia"; cl = "feedback-perigo"; }
+        else if (valor > 180) { fb = "Alta"; cl = "feedback-perigo"; }
 
-        let feedback = "";
-        let classe = "";
-        const primeiraMedidaNoCard = !ultimaGlicemiaPorPeriodo[momento];
-        const subiu = !primeiraMedidaNoCard && valor > ultimaGlicemiaPorPeriodo[momento];
-
-        if (valor < 70) {
-            feedback = "Hipoglicemia! Consumir carboidrato rápido.";
-            classe = "hipo";
-        } else if (valor <= 130) {
-            feedback = "Valor excelente! Continue cuidando de você.";
-            classe = "excelente";
-        } else if (valor <= 180) {
-            feedback = "Valor um pouco alto. Beba água e monitore.";
-            classe = "alerta";
-        } else {
-            if (primeiraMedidaNoCard || subiu) {
-                let correcao = Math.ceil((valor - ALVO) / FSI);
-                feedback = `Valor elevado. Sugestão: +${correcao}un Regular e água.`;
-            } else {
-                feedback = "Aguarde a ação da dose anterior e hidrate.";
-            }
-            classe = "hiper";
-        }
-
-        let cardId = `card-${momento.replace(/\s+/g, '')}`;
+        const cardId = `card-${momento}`;
         let card = document.getElementById(cardId);
-
         if (!card) {
-            card = document.createElement('div');
-            card.id = cardId;
-            card.className = 'group-card';
-            card.innerHTML = `
-                <div class="group-header">${momento}</div>
-                <div class="content">
-                    <div class="main-entry">
-                        <div style="font-size:10px; color:#999;">${dataRegistro} - ${horaFinal}</div>
-                        <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
-                        <div class="main-feedback ${classe}">${feedback}</div>
-                    </div>
-                    <div class="sub-list"></div>
-                </div>`;
-            document.getElementById('historico').appendChild(card);
+            card = document.createElement('div'); card.id = cardId; card.className = 'group-card';
+            card.innerHTML = `<div class="group-header">${momento}</div><div class="main-val">${valor}</div><div class="${cl}">${fb}</div><div class="sub-list"></div>`;
+            document.getElementById('historico').prepend(card);
         } else {
-            const subList = card.querySelector('.sub-list');
-            const subItem = document.createElement('div');
-            subItem.className = 'sub-entry';
-            subItem.innerHTML = `
-                <div class="sub-time-row">
-                    <span>└ ${horaFinal} -</span>
-                    <span class="sub-val">${valor} mg/dL</span>
-                </div>
-                <span class="sub-feedback ${classe}">${feedback}</span>
-            `;
-            subList.appendChild(subItem);
+            card.querySelector('.sub-list').innerHTML += `<div>└ ${hora} - <b>${valor} mg/dL</b></div>`;
         }
-
-        ultimaGlicemiaPorPeriodo[momento] = valor;
         document.getElementById('glicemia').value = "";
     }
 </script>

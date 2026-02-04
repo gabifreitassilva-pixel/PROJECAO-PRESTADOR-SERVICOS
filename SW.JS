@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glicogabi-v1';
+const CACHE_NAME = 'glicogabi-v4';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
@@ -7,18 +7,22 @@ const ASSETS = [
   'ESTOQUES.HTML',
   'AJUSTES.HTML',
   'LEMBRETES.HTML',
-  'ICONE.PNG',
-  'MANIFEST.JSON'
+  'ICONE.png',
+  'manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
+    })
   );
 });
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
+    caches.match(e.request).then((res) => {
+      return res || fetch(e.request);
+    })
   );
 });
