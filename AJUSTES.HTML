@@ -26,14 +26,13 @@
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .hidden { display: none !important; }
         
-        /* ESTILO DO MODAL PARA SIMULAR A4 VERTICAL */
         #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; overflow: auto; padding: 20px 0; }
         .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: -20px; width: 100%; box-sizing: border-box; }
         
         .folha { 
             padding: 10mm; 
-            width: 210mm; /* Largura A4 */
-            min-height: 297mm; /* Altura A4 */
+            width: 210mm; 
+            min-height: 297mm; 
             margin: auto; 
             background: white; 
             color: black; 
@@ -86,7 +85,7 @@
                 </select>
                 <input type="number" id="selAno" style="flex: 1;" value="2024">
             </div>
-            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar em A4 Vertical</button>
+            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar com Dados da Home</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
             <button class="btn-acao btn-wpp" onclick="enviarWpp()">3. Enviar por WhatsApp</button>
         </div>
@@ -175,14 +174,19 @@
         document.getElementById('txtMes').innerText = mesesNomes[mesNum - 1].toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
 
-        // Cálculo dinâmico de dias no mês selecionado
         const diasNoMes = new Date(ano, mesNum, 0).getDate(); 
-
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
         
         let h = ""; 
         for(let i=1; i<=diasNoMes; i++) { 
-            const diaDados = historico.filter(d => d.dia == i);
+            // FILTRO CORRIGIDO: Agora verifica Dia, Mês e Ano exatamente
+            const diaDados = historico.filter(d => {
+                const dataItem = new Date(d.data + "T00:00:00");
+                return dataItem.getDate() === i && 
+                       (dataItem.getMonth() + 1) === mesNum && 
+                       dataItem.getFullYear() === ano;
+            });
+
             const buscar = (m) => diaDados.find(d => d.momento === m)?.valor || "";
 
             h += `<tr>
