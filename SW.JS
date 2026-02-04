@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glicogabi-v8';
+const CACHE_NAME = 'glicogabi-v9';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
