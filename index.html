@@ -37,7 +37,7 @@
             position: relative;
         }
 
-        /* Menu de Navegação Superior com Scroll */
+        /* Menu de Navegação Superior com Scroll Horizontal */
         .nav-tabs {
             display: flex;
             overflow-x: auto;
@@ -70,7 +70,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* Área do Conteúdo (Onde as páginas abrem) */
+        /* Área onde as páginas originais serão abertas */
         .content-area {
             flex: 1;
             background: white;
@@ -104,23 +104,21 @@
 </div>
 
 <script>
-    // Função para trocar de página sem recarregar o index
+    // Função para trocar o conteúdo do iframe e gerenciar o botão ativo
     function navegar(url, botao) {
-        // Atualiza o src do iframe
         document.getElementById('janela-app').src = url;
 
-        // Gerencia a classe ativa nos botões
         const botoes = document.querySelectorAll('.tab-btn');
         botoes.forEach(btn => btn.classList.remove('active'));
         botao.classList.add('active');
     }
 
-    // Registro do Service Worker para PWA e Modo Offline
+    // Registro do Service Worker (necessário para o PWA)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('GlicoGabi: Service Worker registrado!', reg))
-                .catch(err => console.log('GlicoGabi: Erro ao registrar SW', err));
+                .then(reg => console.log('Registro concluído!', reg))
+                .catch(err => console.log('Erro no registro', err));
         });
     }
 </script>
