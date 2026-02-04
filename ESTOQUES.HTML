@@ -9,25 +9,25 @@
         body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
         .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 30px; }
         .header { background: var(--primaria); color: white; padding: 25px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
         
         .tabs { display: flex; background: var(--lavanda); margin: 10px 15px; border-radius: 12px; padding: 5px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); font-size: 13px; cursor: pointer; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); font-size: 11px; cursor: pointer; }
         .tab-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; }
         
         .input-area { background: var(--lavanda); margin: 0 15px 15px; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #e3d9ff; }
         label { font-size: 10px; font-weight: bold; color: var(--primaria); text-transform: uppercase; margin-left: 5px; }
-        input { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; }
+        input { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; width: 100%; box-sizing: border-box; }
         
-        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .btn-excluir { background: #ffeded; color: #ff4444; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 5px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; font-size: 11px; color: var(--primaria); padding: 10px; border-bottom: 2px solid var(--lavanda); }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .section-box { padding: 0 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 15px; overflow: hidden; }
+        th { text-align: left; font-size: 10px; color: var(--primaria); padding: 12px; background: var(--lavanda); text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
         
         .hidden { display: none !important; }
-        .vencido { color: red; font-weight: bold; }
+        .vencido { color: #f44336; font-weight: bold; }
+        .badge-data { font-size: 10px; color: #888; display: block; }
     </style>
 </head>
 <body>
@@ -35,118 +35,140 @@
     <div class="header"><h1>Estoque GlicoGabi</h1></div>
     
     <div class="tabs">
-        <button id="tabEntrada" class="tab-btn active" onclick="toggleAba('entrada')">Nova Entrada</button>
-        <button id="tabEstoque" class="tab-btn" onclick="toggleAba('estoque')">Saldo Atual</button>
+        <button id="btnCad" class="tab-btn active" onclick="toggleAba('cadastro')">Nova Entrada</button>
+        <button id="btnEst" class="tab-btn" onclick="toggleAba('estoque')">Saldo Atual</button>
+        <button id="btnHist" class="tab-btn" onclick="toggleAba('historico')">Histórico</button>
     </div>
 
-    <div id="abaEntrada">
+    <div id="abaCadastro">
         <div class="input-area">
             <label>Item (Ex: Insulina NPH)</label>
-            <input type="text" id="nomeItem" placeholder="Nome do insumo">
+            <input type="text" id="nomeItem" placeholder="Nome da insulina ou insumo">
             
             <label>Quantidade</label>
-            <input type="number" id="qtdItem" placeholder="Ex: 5">
+            <input type="number" id="qtdItem" placeholder="Ex: 5" inputmode="numeric">
             
-            <label>Vencimento</label>
+            <label>Vencimento do Lote</label>
             <input type="date" id="dataVenc">
             
-            <button class="btn-acao" onclick="adicionarEstoque()">Salvar no Estoque</button>
+            <button class="btn-acao" onclick="adicionarEstoque()">Confirmar Entrada</button>
         </div>
     </div>
 
     <div id="abaEstoque" class="hidden">
-        <div class="input-area" style="background: white;">
+        <div class="section-box">
             <table>
                 <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Qtd</th>
-                        <th>Venc.</th>
-                        <th></th>
-                    </tr>
+                    <tr><th>Item</th><th>Qtd</th><th>Validade</th></tr>
                 </thead>
                 <tbody id="corpoEstoque"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="abaHistorico" class="hidden">
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>Data Entrada</th><th>Item</th><th>Qtd</th></tr>
+                </thead>
+                <tbody id="corpoHistorico"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
+    // Carrega os dados ou inicia vazio
     let estoque = JSON.parse(localStorage.getItem('gabi_estoque_v1') || '[]');
+    let historico = JSON.parse(localStorage.getItem('gabi_historico_estoque') || '[]');
 
     function toggleAba(aba) {
-        document.getElementById('abaEntrada').classList.toggle('hidden', aba !== 'entrada');
+        document.getElementById('abaCadastro').classList.toggle('hidden', aba !== 'cadastro');
         document.getElementById('abaEstoque').classList.toggle('hidden', aba !== 'estoque');
-        document.getElementById('tabEntrada').classList.toggle('active', aba === 'entrada');
-        document.getElementById('tabEstoque').classList.toggle('active', aba === 'estoque');
-        if(aba === 'estoque') render();
+        document.getElementById('abaHistorico').classList.toggle('hidden', aba !== 'historico');
+        
+        document.getElementById('btnCad').classList.toggle('active', aba === 'cadastro');
+        document.getElementById('btnEst').classList.toggle('active', aba === 'estoque');
+        document.getElementById('btnHist').classList.toggle('active', aba === 'historico');
+        
+        if(aba === 'estoque') renderEstoque();
+        if(aba === 'historico') renderHistorico();
     }
 
     function adicionarEstoque() {
         const nome = document.getElementById('nomeItem').value.trim().toUpperCase();
         const qtd = parseInt(document.getElementById('qtdItem').value);
         const venc = document.getElementById('dataVenc').value;
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-        if (!nome || !qtd || !venc) return alert("Preencha todos os campos!");
+        if (!nome || !qtd || !venc) return alert("Por favor, preencha todos os campos!");
 
-        // Regra: Se mesmo nome e mesmo vencimento, soma as quantidades
-        const indexExistente = estoque.findIndex(item => item.nome === nome && item.venc === venc);
-
-        if (indexExistente !== -1) {
-            estoque[indexExistente].qtd += qtd;
+        // 1. Atualizar Saldo Atual (Soma se nome e vencimento forem iguais)
+        const idx = estoque.findIndex(i => i.nome === nome && i.venc === venc);
+        if (idx !== -1) {
+            estoque[idx].qtd += qtd;
         } else {
             estoque.push({ nome, qtd, venc });
         }
-
-        // Ordenar por data de vencimento (mais próximo primeiro)
         estoque.sort((a, b) => new Date(a.venc) - new Date(b.venc));
 
+        // 2. Adicionar ao Histórico de Entradas
+        historico.unshift({ dataEntrada: dataHoje, nome: nome, qtd: qtd });
+
+        // Salvar
         localStorage.setItem('gabi_estoque_v1', JSON.stringify(estoque));
+        localStorage.setItem('gabi_historico_estoque', JSON.stringify(historico));
         
-        // Limpar campos
+        // Limpar e avisar
         document.getElementById('nomeItem').value = "";
         document.getElementById('qtdItem').value = "";
         document.getElementById('dataVenc').value = "";
         
-        alert("Item adicionado!");
+        alert("Estoque atualizado com sucesso!");
         toggleAba('estoque');
     }
 
-    function removerItem(index) {
-        if(confirm("Deseja remover este item do estoque?")) {
-            estoque.splice(index, 1);
-            localStorage.setItem('gabi_estoque_v1', JSON.stringify(estoque));
-            render();
-        }
-    }
-
-    function render() {
+    function renderEstoque() {
         const corpo = document.getElementById('corpoEstoque');
         const hoje = new Date().toISOString().split('T')[0];
 
         if (estoque.length === 0) {
-            corpo.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">Estoque vazio</td></tr>';
+            corpo.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">Sem saldo disponível.</td></tr>';
             return;
         }
 
         corpo.innerHTML = estoque.map((item, index) => {
             const isVencido = item.venc < hoje ? 'vencido' : '';
-            // Formatar data para PT-BR
             const dataBr = item.venc.split('-').reverse().join('/');
-            
             return `
                 <tr>
                     <td><b>${item.nome}</b></td>
                     <td>${item.qtd}</td>
                     <td class="${isVencido}">${dataBr}</td>
-                    <td><button class="btn-excluir" onclick="removerItem(${index})">×</button></td>
                 </tr>
             `;
         }).join('');
     }
 
-    // Inicializar
-    render();
+    function renderHistorico() {
+        const corpo = document.getElementById('corpoHistorico');
+        if (historico.length === 0) {
+            corpo.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">Nenhuma entrada registrada.</td></tr>';
+            return;
+        }
+
+        corpo.innerHTML = historico.map(h => `
+            <tr>
+                <td>${h.dataEntrada}</td>
+                <td><b>${h.nome}</b></td>
+                <td>+ ${h.qtd}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Inicializa a página
+    renderEstoque();
 </script>
 </body>
 </html>
