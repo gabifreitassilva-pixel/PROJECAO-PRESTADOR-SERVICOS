@@ -25,12 +25,28 @@
         th { background: var(--primaria); color: white; padding: 10px; font-size: 12px; text-align: left; }
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .hidden { display: none !important; }
-        #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: none; overflow: auto; }
-        .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: 0; }
-        .folha { padding: 8mm; width: 275mm; margin: auto; background: white; color: black; }
-        .tab-rel { width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed; }
-        .tab-rel th { border: 1px solid var(--primaria); padding: 5px; background: var(--lavanda-medio); color: var(--primaria); }
-        .tab-rel td { border: 1px solid var(--lavanda-medio); padding: 3px; text-align: center; height: 5.8mm; }
+        
+        /* ESTILO DO MODAL PARA SIMULAR A4 VERTICAL */
+        #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; overflow: auto; padding: 20px 0; }
+        .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: -20px; width: 100%; box-sizing: border-box; }
+        
+        .folha { 
+            padding: 10mm; 
+            width: 210mm; /* Largura A4 */
+            min-height: 297mm; /* Altura A4 */
+            margin: auto; 
+            background: white; 
+            color: black; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .tab-rel { width: 100%; border-collapse: collapse; font-size: 8pt; table-layout: fixed; margin-top: 10px; }
+        .tab-rel th { border: 1px solid #333; padding: 4px; background: #eee !important; color: black; font-weight: bold; }
+        .tab-rel td { border: 1px solid #333; padding: 3px; text-align: center; height: 6mm; color: black; }
+        
+        @media screen and (max-width: 215mm) {
+            .folha { width: 95%; height: auto; padding: 5mm; }
+        }
     </style>
 </head>
 <body>
@@ -40,6 +56,7 @@
         <button id="btnDoses" class="tab-btn active" onclick="toggleAba('doses')">Minhas Doses</button>
         <button id="btnConfig" class="tab-btn" onclick="toggleAba('config')">Configuração</button>
     </div>
+    
     <div id="abaConfig" class="hidden">
         <label style="font-size:10px; font-weight:bold; color:var(--primaria); margin-left:20px">CONFIGURAR MEDICAÇÕES</label>
         <div class="section-box" style="margin-top:5px">
@@ -49,6 +66,7 @@
             <button class="btn-acao" onclick="salvarDose()">Salvar Configuração</button>
         </div>
     </div>
+
     <div id="abaDoses">
         <label style="font-size:10px; font-weight:bold; color:var(--primaria); margin-left:20px">DOSES CADASTRADAS</label>
         <div class="section-box" style="margin-top:5px; padding:5px">
@@ -59,28 +77,27 @@
             <input type="text" id="wppInput" placeholder="WhatsApp (DDD + Número)" onchange="salvarWpp()">
             <div style="display: flex; gap: 5px;">
                 <select id="selMes" style="flex: 2;">
-                    <option value="Janeiro">Janeiro</option><option value="Fevereiro">Fevereiro</option>
-                    <option value="Março">Março</option><option value="Abril">Abril</option>
-                    <option value="Maio">Maio</option><option value="Junho">Junho</option>
-                    <option value="Julho">Julho</option><option value="Agosto">Agosto</option>
-                    <option value="Setembro" selected>Setembro</option><option value="Outubro">Outubro</option>
-                    <option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option>
+                    <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                    <option value="3">Março</option><option value="4">Abril</option>
+                    <option value="5">Maio</option><option value="6">Junho</option>
+                    <option value="7">Julho</option><option value="8">Agosto</option>
+                    <option value="9" selected>Setembro</option><option value="10">Outubro</option>
+                    <option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
-                <input type="text" id="selAno" style="flex: 1;" value="2024">
+                <input type="number" id="selAno" style="flex: 1;" value="2024">
             </div>
-            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar com Dados da Home</button>
+            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar em A4 Vertical</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
             <button class="btn-acao btn-wpp" onclick="enviarWpp()">3. Enviar por WhatsApp</button>
-            <button class="btn-acao" onclick="limparHistorico()" style="background:#f44336; margin-top: 10px;">Limpar Medidas da Home</button>
         </div>
     </div>
 </div>
 
 <div id="modalRelatorio">
-    <div class="rel-topo"><b>RELATÓRIO GLICO GABI</b><button onclick="fecharRelatorio()">FECHAR X</button></div>
+    <div class="rel-topo"><b>RELATÓRIO GLICO GABI (A4)</b><button onclick="fecharRelatorio()">FECHAR X</button></div>
     <div id="areaRel" class="folha">
-        <h2 style="text-align:center; color: var(--primaria);">PLANILHA DE CONTROLE GLICÊMICO</h2>
-        <h3 style="text-align:center;">PERÍODO: <span id="txtMes"></span> / <span id="txtAno"></span></h3>
+        <h2 style="text-align:center; margin-bottom: 5px;">PLANILHA DE CONTROLE GLICÊMICO</h2>
+        <h3 style="text-align:center; margin-top: 0;">PERÍODO: <span id="txtMes"></span> / <span id="txtAno"></span></h3>
         <table class="tab-rel">
             <thead>
                 <tr>
@@ -105,6 +122,8 @@
 <script>
     let db = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
     document.getElementById('wppInput').value = localStorage.getItem('gabi_wpp_ajustes') || "";
+
+    const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
     function toggleAba(aba) { 
         document.getElementById('abaDoses').classList.toggle('hidden', aba !== 'doses'); 
@@ -151,15 +170,18 @@
     function salvarWpp() { localStorage.setItem('gabi_wpp_ajustes', document.getElementById('wppInput').value); }
 
     function verRelatorio() { 
-        const mes = document.getElementById('selMes').value; 
-        const ano = document.getElementById('selAno').value; 
-        document.getElementById('txtMes').innerText = mes.toUpperCase(); 
+        const mesNum = parseInt(document.getElementById('selMes').value); 
+        const ano = parseInt(document.getElementById('selAno').value); 
+        document.getElementById('txtMes').innerText = mesesNomes[mesNum - 1].toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
+
+        // Cálculo dinâmico de dias no mês selecionado
+        const diasNoMes = new Date(ano, mesNum, 0).getDate(); 
 
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
         
         let h = ""; 
-        for(let i=1; i<=31; i++) { 
+        for(let i=1; i<=diasNoMes; i++) { 
             const diaDados = historico.filter(d => d.dia == i);
             const buscar = (m) => diaDados.find(d => d.momento === m)?.valor || "";
 
@@ -185,9 +207,11 @@
         verRelatorio(); 
         const element = document.getElementById('areaRel'); 
         const opt = { 
-            margin: [2,2,2,2], 
-            filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}.pdf`, 
-            jsPDF: { orientation: 'landscape' } 
+            margin: 5, 
+            filename: `Relatorio_Glicemia_${mesesNomes[document.getElementById('selMes').value - 1]}.pdf`, 
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         }; 
         html2pdf().from(element).set(opt).save().then(() => { fecharRelatorio(); }); 
     }
@@ -195,16 +219,9 @@
     function enviarWpp() { 
         const num = document.getElementById('wppInput').value; 
         if(!num) return alert("Informe o número."); 
-        const mes = document.getElementById('selMes').value; 
-        const msg = encodeURIComponent(`Olá! Segue meu Relatório de Glicemia de ${mes}.`); 
+        const mesTexto = mesesNomes[document.getElementById('selMes').value - 1]; 
+        const msg = encodeURIComponent(`Olá! Segue meu Relatório de Glicemia de ${mesTexto}.`); 
         window.open(`https://wa.me/55${num}?text=${msg}`); 
-    }
-
-    function limparHistorico() {
-        if(confirm("Deseja apagar todas as medidas da Home? Esta ação não pode ser desfeita.")) {
-            localStorage.removeItem('gabi_historico_glicemias');
-            alert("Histórico limpo!");
-        }
     }
 
     render();
