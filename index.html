@@ -14,63 +14,64 @@
             margin: 0; padding: 0; height: 100%; 
             background-color: #f0f0f0; display: flex; justify-content: center;
             font-family: 'Segoe UI', sans-serif;
+            overflow: hidden; /* Impede scroll na página principal */
         }
 
-        /* Estrutura Principal */
+        /* Estrutura Principal que ocupa a tela toda */
         .outer-frame {
             background-color: var(--primaria);
             width: 100%; max-width: 450px; height: 100vh;
             display: flex; flex-direction: column;
-            border: 5px solid var(--primaria);
             overflow: hidden;
         }
 
-        /* Área Branca (Conteúdo) agora fica em cima */
+        /* Área Branca (Conteúdo) no TOPO */
         .content-container {
             flex: 1; 
             background: white; 
-            border-radius: 0 0 25px 25px; /* Arredondado embaixo */
+            border-radius: 0 0 25px 25px; /* Arredondado apenas embaixo */
             overflow: hidden; 
             position: relative;
         }
 
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Menu de Abas agora fica EM BAIXO */
+        /* MENU DE NAVEGAÇÃO FIXO EM BAIXO */
         .nav-tabs {
             display: flex; 
             overflow-x: auto; 
-            padding: 15px 10px; 
-            gap: 10px;
+            padding: 12px 10px; 
+            gap: 8px;
             background: var(--primaria);
-            scrollbar-width: none; 
+            scrollbar-width: none; /* Esconde scroll no Firefox */
             -webkit-overflow-scrolling: touch;
             align-items: center;
+            justify-content: flex-start;
         }
 
-        .nav-tabs::-webkit-scrollbar { display: none; }
+        .nav-tabs::-webkit-scrollbar { display: none; } /* Esconde scroll no Chrome/Safari */
 
-        /* Estilo dos Botões para não cortar */
+        /* Botões ajustados para não espremer o texto */
         .tab-btn {
             background: rgba(255,255,255,0.2); 
             border: none; 
             color: white;
-            padding: 10px 15px; 
+            padding: 8px 14px; 
             border-radius: 20px; 
-            white-space: nowrap; /* Impede quebra de linha */
+            white-space: nowrap; 
             font-weight: bold; 
-            font-size: 13px; 
+            font-size: 12px; 
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
-            flex-shrink: 0; /* Impede que o botão esprema o texto */
+            gap: 4px;
+            flex-shrink: 0; /* IMPEDE QUE O BOTÃO SEJA ESPREMIDO */
         }
 
         .tab-btn.active { 
             background: white; 
             color: var(--primaria); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -86,7 +87,7 @@
             <button class="tab-btn" onclick="navegar('consulta e exames.HTML', this)">🩺 Consultas</button>
             <button class="tab-btn" onclick="navegar('historico.HTML', this)">📅 Histórico</button>
             <button class="tab-btn" onclick="navegar('ESTOQUE.HTML', this)">📦 Estoque</button>
-            <button class="tab-btn" onclick="navegar('ajustE .html', this)">⚙️ Ajustes</button>
+            <button class="tab-btn" onclick="navegar('ajuste .html', this)">⚙️ Ajustes</button>
             <button class="tab-btn" onclick="navegar('lembretes .html', this)">🔔 Lembretes</button>
         </div>
     </div>
@@ -95,21 +96,18 @@
         function navegar(url, btn) {
             document.getElementById('janela').src = url;
             
-            // Remove classe active de todos
+            // Gerencia classe ativa
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            // Adiciona no clicado
             btn.classList.add('active');
 
-            // Garante que o botão clicado fique visível no scroll horizontal
+            // Faz o scroll automático para o botão clicado aparecer todo
             btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
 
-        // PWA
+        // Registro de Service Worker para PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
 </html>
-
