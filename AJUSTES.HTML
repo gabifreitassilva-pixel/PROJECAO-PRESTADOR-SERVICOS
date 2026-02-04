@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primaria: #7e57ff; --lavanda: #f4f0ff; --lavanda-medio: #e3d9ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; overflow-x: hidden; }
         .container { background: white; width: 100%; min-height: 100vh; padding-bottom: 30px; display: flex; flex-direction: column; }
         .header { background: var(--primaria); color: white; text-align: center; padding: 15px; }
         .tabs { display: flex; background: var(--lavanda); margin: 10px 15px; border-radius: 12px; padding: 5px; }
@@ -22,19 +22,9 @@
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .hidden { display: none !important; }
 
-        /* Estilo do Modal e Folha do PDF */
         #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; overflow: auto; padding: 20px 0; }
         .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: -20px; width: 100%; box-sizing: border-box; }
-        
-        .folha { 
-            padding: 10mm; 
-            width: 277mm; /* Largura para A4 Paisagem */
-            margin: auto; 
-            background: white; 
-            color: black; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        
+        .folha { padding: 10mm; width: 277mm; margin: auto; background: white; color: black; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .tab-rel { width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed; margin-top: 10px; }
         .tab-rel th { border: 1px solid #333; padding: 6px; background: #eee !important; color: black; font-weight: bold; }
         .tab-rel td { border: 1px solid #333; padding: 5px; text-align: center; height: 8mm; color: black; }
@@ -64,12 +54,13 @@
             <input type="text" id="wppInput" placeholder="WhatsApp (DDD + Número)">
             <div style="display: flex; gap: 5px;">
                 <select id="selMes" style="flex: 2;">
+                    <option value="">Selecione o Mês...</option>
                     <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
                     <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
                     <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-                    <option value="10" selected>Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
-                <input type="number" id="selAno" style="flex: 1;" value="2024">
+                <input type="number" id="selAno" style="flex: 1;" placeholder="Ano (Ex: 2024)">
             </div>
             <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Relatório</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF Completo</button>
@@ -121,10 +112,16 @@
     function remover(i) { db.splice(i, 1); localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); render(); }
 
     function verRelatorio() { 
-        const mes = parseInt(document.getElementById('selMes').value); 
-        const ano = parseInt(document.getElementById('selAno').value); 
+        const mesVal = document.getElementById('selMes').value;
+        const anoVal = document.getElementById('selAno').value;
+
+        if(!mesVal || !anoVal) return alert("Por favor, selecione o Mês e digite o Ano.");
+
+        const mes = parseInt(mesVal); 
+        const ano = parseInt(anoVal); 
         document.getElementById('txtMes').innerText = mesesNomes[mes-1].toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
+
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]'); 
         const diasNoMes = new Date(ano, mes, 0).getDate(); 
         let h = ""; 
@@ -141,14 +138,15 @@
     }
 
     function exportarPDF() { 
+        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano antes.");
         verRelatorio();
         const element = document.getElementById('areaRel');
         const opt = { 
             margin: [5, 5, 5, 5], 
-            filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}.pdf`, 
+            filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}_${document.getElementById('selAno').value}.pdf`, 
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // PAISAGEM para caber tudo
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }; 
         html2pdf().from(element).set(opt).save(); 
     }
