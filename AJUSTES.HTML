@@ -81,7 +81,7 @@
                 </select>
                 <input type="number" id="selAno" style="flex: 1;" value="2024">
             </div>
-            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar com Dados da Home</button>
+            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Relatório</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
             <button class="btn-acao btn-wpp" onclick="enviarWpp()">3. Enviar por WhatsApp</button>
         </div>
@@ -89,7 +89,7 @@
 </div>
 
 <div id="modalRelatorio">
-    <div class="rel-topo"><b>RELATÓRIO GLICO GABI (A4)</b><button onclick="fecharRelatorio()">FECHAR X</button></div>
+    <div class="rel-topo"><b>RELATÓRIO GLICO GABI</b><button onclick="fecharRelatorio()">FECHAR X</button></div>
     <div id="areaRel" class="folha">
         <h2 style="text-align:center; margin-bottom: 5px;">PLANILHA DE CONTROLE GLICÊMICO</h2>
         <h3 style="text-align:center; margin-top: 0;">PERÍODO: <span id="txtMes"></span> / <span id="txtAno"></span></h3>
@@ -135,7 +135,7 @@
         if(!nome || !qtd) return alert("Preencha todos os campos."); 
         if(idx === -1) db.push({nome, qtd}); 
         else db[idx] = {nome, qtd}; 
-        localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); 
+        localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db));
         document.getElementById('nomeMed').value = ""; 
         document.getElementById('qtdMed').value = ""; 
         document.getElementById('editIdx').value = "-1"; 
@@ -157,7 +157,7 @@
     function remover(i) { 
         if(confirm("Deseja remover?")) { 
             db.splice(i, 1); 
-            localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); 
+            localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db));
             render(); 
         } 
     }
@@ -175,7 +175,6 @@
         
         let h = ""; 
         for(let i=1; i<=diasNoMes; i++) { 
-            // FILTRO ATUALIZADO: Compara com o campo data completa enviada pela Home
             const diaDados = historico.filter(d => {
                 const dataItem = new Date(d.data + "T00:00:00");
                 return dataItem.getDate() === i && 
