@@ -12,78 +12,28 @@
             --vermelho: #f44336;
         }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: white;
-            margin: 0;
-            padding: 0;
-            display: block;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: white; margin: 0; padding: 0; }
+        .container { width: 100%; background: white; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 30px; }
+        .header { background-color: var(--primaria); color: white; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 32px; }
+        
+        /* Onde aparecem as doses vindas de AJUSTES */
+        .doses-container { display: flex; justify-content: center; gap: 10px; padding: 10px 15px; background: #f4f0ff; }
+        .dose-box { border: 1px solid #ddd; border-radius: 10px; padding: 8px; text-align: center; flex: 1; font-size: 11px; background: white; }
+        .dose-box b { display: block; color: var(--primaria); font-size: 14px; }
 
-        .container {
-            width: 100%;
-            background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            padding-bottom: 30px;
-        }
+        .input-area { background-color: #f4f0ff; margin: 15px; padding: 20px; border-radius: 25px; display: flex; flex-direction: column; gap: 12px; }
+        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; }
+        input, select { padding: 12px; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; width: 100%; box-sizing: border-box; }
+        button { background-color: var(--laranja); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
 
-        .header {
-            background-color: var(--primaria);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .header h1 { margin: 0; font-size: 32px; letter-spacing: 1px; }
-
-        .input-area {
-            background-color: #f4f0ff;
-            margin: -20px 15px 15px;
-            padding: 25px;
-            border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; margin-left: 5px; }
-
-        input, select {
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            outline: none;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .btn-registrar {
-            background-color: var(--laranja);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .history-section { padding: 0 15px; flex: 1; }
-        .group-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 6px solid var(--primaria); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .group-header { font-weight: bold; color: var(--primaria); margin-bottom: 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .main-entry { display: flex; align-items: center; justify-content: space-between; }
-        .main-val { font-size: 24px; font-weight: bold; color: #333; }
-        .main-feedback { font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; }
-        .feedback-bom { background-color: #e8f5e9; color: var(--verde); }
-        .feedback-perigo { background-color: #ffebee; color: var(--vermelho); }
-        .sub-list { margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px; }
-        .sub-entry { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 13px; color: #666; }
+        .history-section { padding: 0 15px; }
+        .group-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 6px solid var(--primaria); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .main-val { font-size: 26px; font-weight: bold; }
+        .main-feedback { font-size: 13px; font-weight: bold; margin-top: 5px; }
+        .hipo { color: var(--vermelho); }
+        .excelente { color: var(--verde); }
+        .hiper { color: var(--vermelho); }
     </style>
 </head>
 <body>
@@ -91,116 +41,113 @@
 <div class="container">
     <div class="header"><h1>GlicoGabi</h1></div>
 
+    <div id="dosesAjustesHome" class="doses-container">
+        <p style="font-size:10px; color:#999">Carregando doses de Ajustes...</p>
+    </div>
+
     <div class="input-area">
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;"><label>Data</label><input type="date" id="data-retro"></div>
             <div style="flex: 1;"><label>Hora</label><input type="time" id="hora-retro"></div>
         </div>
-        
-        <label>Qual o momento?</label>
+        <label>Momento</label>
         <select id="momento">
-            <option value="Jejum">Jejum</option>
-            <option value="Pós café">Pós café</option>
-            <option value="Antes do almoço">Antes do almoço</option>
-            <option value="Depois do almoço">Depois do almoço</option>
-            <option value="Antes da janta">Antes da janta</option>
-            <option value="Depois da janta">Depois da janta</option>
-            <option value="Antes de Dormir">Antes de Dormir</option>
+            <option value="Jejum">🌅 Jejum</option>
+            <option value="Pós café">☕ Pós café</option>
+            <option value="Antes do almoço">🥗 Antes do almoço</option>
+            <option value="Depois do almoço">🍛 Depois do almoço</option>
+            <option value="Antes da janta">🍽️ Antes da janta</option>
+            <option value="Depois da janta">🍕 Depois da janta</option>
+            <option value="Antes de Dormir">🌙 Antes de Dormir</option>
         </select>
-
-        <label>Valor da Glicemia (mg/dL)</label>
+        <label>Glicemia (mg/dL)</label>
         <input type="number" id="glicemia" placeholder="Ex: 110" inputmode="numeric">
-
-        <button class="btn-registrar" onclick="registrar()">Registrar Glicemia</button>
+        <button onclick="registrar()">Registrar Glicemia</button>
     </div>
 
     <div class="history-section" id="historico"></div>
 </div>
 
 <script>
+    const ALVO = 130;
+    const FSI = 72;
     let ultimaGlicemiaPorPeriodo = {};
 
-    function registrar() {
-        const valor = document.getElementById('glicemia').value;
-        const momento = document.getElementById('momento').value;
-        const dataRetro = document.getElementById('data-retro').value;
-        const horaRetro = document.getElementById('hora-retro').value;
+    // BUSCA AS DOSES DA ABA AJUSTES
+    function carregarDoses() {
+        const dados = localStorage.getItem('gabi_ajustes_vFinal');
+        const container = document.getElementById('dosesAjustesHome');
+        if (dados) {
+            const doses = JSON.parse(dados);
+            container.innerHTML = doses.map(d => `<div class="dose-box">${d.nome} <b>${d.qtd}</b></div>`).join('');
+        }
+    }
 
-        if (!valor) { alert("Por favor, insira o valor da glicemia."); return; }
+    function registrar() {
+        const valor = parseInt(document.getElementById('glicemia').value);
+        const momento = document.getElementById('momento').value;
+        const dRetro = document.getElementById('data-retro').value;
+        const hRetro = document.getElementById('hora-retro').value;
+
+        if (!valor) return;
 
         const agora = new Date();
         const HOJE_STR = agora.toISOString().split('T')[0];
-        const dataRegistro = dataRetro || HOJE_STR;
-        const horaFinal = horaRetro || agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const dataReg = dRetro || HOJE_STR;
+        const horaReg = hRetro || agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        // Lógica de Feedback
-        let feedback = "Normal";
-        let classe = "feedback-bom";
-        if (valor < 70) { feedback = "Hipoglicemia"; classe = "feedback-perigo"; }
-        else if (valor > 180) { feedback = "Glicemia Alta"; classe = "feedback-perigo"; }
+        // --- MENSAGENS E CÁLCULOS RECUPERADOS ---
+        let feedback = ""; 
+        let classe = "";
+        const primeiraMedida = !ultimaGlicemiaPorPeriodo[momento];
+        const subiu = !primeiraMedida && valor > ultimaGlicemiaPorPeriodo[momento];
 
-        // --- AJUSTE AQUI: SALVA NO HISTÓRICO ANTES DE QUALQUER COISA ---
-        let historicoCompleto = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
-        
-        // Extrai o dia da data (seja hoje ou retroativa) para o relatório
-        const diaExtraido = parseInt(dataRegistro.split('-')[2]);
+        if (valor < 70) {
+            feedback = "Hipoglicemia! Consumir carboidrato rápido.";
+            classe = "hipo";
+        } else if (valor <= 130) {
+            feedback = "Valor excelente! Continue cuidando de você.";
+            classe = "excelente";
+        } else if (valor <= 180) {
+            feedback = "Valor um pouco alto. Beba água e monitore.";
+            classe = "alerta";
+        } else {
+            if (primeiraMedida || subiu) {
+                let correcao = Math.ceil((valor - ALVO) / FSI);
+                feedback = `Valor elevado. Sugestão: +${correcao}un Regular e água.`;
+            } else {
+                feedback = "Aguarde a ação da dose anterior e hidrate.";
+            }
+            classe = "hiper";
+        }
 
-        historicoCompleto.push({
-            dia: diaExtraido,
-            data: dataRegistro,
-            valor: valor,
-            momento: momento,
-            hora: horaFinal,
-            feedback: feedback
-        });
-        localStorage.setItem('gabi_historico_glicemias', JSON.stringify(historicoCompleto));
+        // SALVA NO HISTÓRICO PARA O RELATÓRIO
+        let hist = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        hist.push({ dia: parseInt(dataReg.split('-')[2]), valor, momento, hora: horaReg });
+        localStorage.setItem('gabi_historico_glicemias', JSON.stringify(hist));
 
-        // Se for retroativo, avisa e limpa a tela sem criar o card visual de hoje
-        if (dataRegistro !== HOJE_STR) {
-            alert("Registro retroativo salvo no histórico com sucesso!");
+        if (dataReg !== HOJE_STR) {
+            alert("Registro retroativo salvo no histórico!");
             document.getElementById('glicemia').value = "";
-            document.getElementById('data-retro').value = "";
-            document.getElementById('hora-retro').value = "";
             return;
         }
 
-        // Criar ou atualizar card visual (Apenas para registros de HOJE)
+        // VISUALIZAÇÃO NA TELA
         const cardId = `card-${momento}`;
         let card = document.getElementById(cardId);
-
         if (!card) {
-            card = document.createElement('div');
-            card.id = cardId;
-            card.className = 'group-card';
-            card.innerHTML = `
-                <div class="group-header">${momento}</div>
-                <div class="content">
-                    <div class="main-entry">
-                        <div style="font-size:10px; color:#999;">${dataRegistro} - ${horaFinal}</div>
-                        <div class="main-val">${valor} <span style="font-size:12px; font-weight:normal;">mg/dL</span></div>
-                        <div class="main-feedback ${classe}">${feedback}</div>
-                    </div>
-                    <div class="sub-list"></div>
-                </div>`;
+            card = document.createElement('div'); card.id = cardId; card.className = 'group-card';
+            card.innerHTML = `<div class="group-header">${momento}</div><div class="main-val">${valor} mg/dL</div><div class="main-feedback ${classe}">${feedback}</div><div class="sub-list"></div>`;
             document.getElementById('historico').appendChild(card);
         } else {
-            const subList = card.querySelector('.sub-list');
-            const subItem = document.createElement('div');
-            subItem.className = 'sub-entry';
-            subItem.innerHTML = `
-                <div class="sub-time-row">
-                    <span>└ ${horaFinal} -</span>
-                    <span class="sub-val">${valor} mg/dL</span>
-                </div>
-                <span class="sub-feedback ${classe}">${feedback}</span>
-            `;
-            subList.appendChild(subItem);
+            card.querySelector('.sub-list').innerHTML += `<div style="font-size:12px; color:#666;">└ ${horaReg} - <b>${valor} mg/dL</b> (${feedback})</div>`;
         }
 
         ultimaGlicemiaPorPeriodo[momento] = valor;
         document.getElementById('glicemia').value = "";
     }
-</script>
 
+    window.onload = carregarDoses;
+</script>
 </body>
 </html>
