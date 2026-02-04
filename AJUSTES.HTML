@@ -104,8 +104,6 @@
         if(!nome || !qtd) return alert("Preencha!"); 
         db.push({nome, qtd}); 
         localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(db)); 
-        
-        // Limpa campos e volta
         document.getElementById('nomeMed').value = "";
         document.getElementById('qtdMed').value = "";
         toggleAba('doses'); 
