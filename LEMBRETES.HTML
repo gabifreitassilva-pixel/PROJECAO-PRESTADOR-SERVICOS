@@ -5,52 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlicoGabi - Lembretes</title>
     <style>
-        :root { --primaria: #7e57ff; --lavanda-claro: #f4f0ff; }
+        :root { --primaria: #7e57ff; --lavanda-claro: #f4f0ff; --cinza: #666; }
         body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
         .container { background: white; width: 100%; min-height: 100vh; padding-bottom: 30px; display: flex; flex-direction: column; }
-        .header { background: var(--primaria); color: white; text-align: center; padding: 15px; }
-        .tabs { display: flex; background: var(--lavanda-claro); margin: 10px 15px; border-radius: 12px; padding: 5px; gap: 5px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); font-size: 11px; }
+        .header { background: var(--primaria); color: white; text-align: center; padding: 20px; }
+        .header h1 { margin: 0; font-size: 24px; }
+
+        .tabs { display: flex; background: var(--lavanda-claro); margin: 15px; border-radius: 12px; padding: 5px; gap: 5px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); font-size: 13px; cursor: pointer; }
         .tab-btn.active { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
-        .section-box { background: var(--lavanda-claro); margin: 0 15px 15px; padding: 15px; border-radius: 20px; border: 1px solid #e3d9ff; }
-        input { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        .btn-acao { background: var(--primaria); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; }
-        .hidden { display: none !important; }
+
+        .section-box { background: var(--lavanda-claro); margin: 0 15px 15px; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 12px; }
+        
+        input[type="text"], input[type="time"] { padding: 15px; border-radius: 12px; border: 1px solid #ddd; font-size: 16px; width: 100%; box-sizing: border-box; }
+        
+        /* Estilo dos dias da semana (Estilo Celular) */
+        .dias-semana { display: flex; justify-content: space-between; margin: 10px 0; }
+        .dia-circulo { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--primaria); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; color: var(--primaria); font-weight: bold; transition: 0.3s; }
+        .dia-circulo.active { background: var(--primaria); color: white; }
+
+        .btn-acao { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+
+        /* Lista de Despertadores */
+        .alarme-card { background: #f9f9f9; border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+        .alarme-info { display: flex; flex-direction: column; }
+        .alarme-hora { font-size: 24px; font-weight: bold; color: #333; }
+        .alarme-nome { font-size: 14px; color: var(--cinza); }
+        .alarme-dias { font-size: 11px; color: var(--primaria); font-weight: bold; margin-top: 4px; }
+
+        .btn-excluir { background: #ffeded; color: #ff4444; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="header"><h3>Lembretes GlicoGabi</h3></div>
+    <div class="header"><h1>Meus Alertas</h1></div>
+
     <div class="tabs">
-        <button id="btnLembretes" class="tab-btn active" onclick="toggleAba('lembretes')">Lembretes Atuais</button>
-        <button id="btnConfigLembrete" class="tab-btn" onclick="toggleAba('config-lembrete')">Configurar</button>
+        <button id="btnLembretes" class="tab-btn active" onclick="toggleAba('lembretes')">Alarmes</button>
+        <button id="btnConfigLembrete" class="tab-btn" onclick="toggleAba('config-lembrete')">Novo Horário</button>
     </div>
+
     <div id="abaConfigLembrete" class="hidden">
         <div class="section-box">
-            <input type="text" id="titLembrete" placeholder="Descrição">
+            <label style="font-size: 11px; font-weight: bold; color: var(--primaria);">NOME DO ALERTA</label>
+            <input type="text" id="titLembrete" placeholder="Ex: Insulina NPH">
+            
+            <label style="font-size: 11px; font-weight: bold; color: var(--primaria);">HORÁRIO</label>
             <input type="time" id="horaLembrete">
+
+            <label style="font-size: 11px; font-weight: bold; color: var(--primaria);">REPETIR NOS DIAS:</label>
+            <div class="dias-semana">
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Dom">D</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Seg">S</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Ter">T</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Qua">Q</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Qui">Q</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Sex">S</div>
+                <div class="dia-circulo" onclick="toggleDia(this)" data-dia="Sáb">S</div>
+            </div>
+
             <button class="btn-acao" onclick="salvarLembrete()">Salvar Despertador</button>
         </div>
     </div>
-    <div id="abaLembretes"><div id="listaLembretes" class="section-box">Nenhum alerta ativo</div></div>
+
+    <div id="abaLembretes">
+        <div id="listaLembretes" style="padding: 0 15px;">
+            </div>
+    </div>
 </div>
+
 <script>
-    let lembretes = [];
+    let lembretes = JSON.parse(localStorage.getItem('gabi_lembretes_v2') || '[]');
+
     function toggleAba(aba) {
         document.getElementById('abaLembretes').classList.toggle('hidden', aba !== 'lembretes');
         document.getElementById('abaConfigLembrete').classList.toggle('hidden', aba !== 'config-lembrete');
+        document.getElementById('btnLembretes').classList.toggle('active', aba === 'lembretes');
+        document.getElementById('btnConfigLembrete').classList.toggle('active', aba === 'config-lembrete');
+        if(aba === 'lembretes') render();
     }
+
+    function toggleDia(el) {
+        el.classList.toggle('active');
+    }
+
     function salvarLembrete() {
         const tit = document.getElementById('titLembrete').value;
         const hora = document.getElementById('horaLembrete').value;
-        if(!tit || !hora) return alert("Preencha!");
-        lembretes.push({ tit, hora });
-        render();
+        const diasAtivos = Array.from(document.querySelectorAll('.dia-circulo.active')).map(d => d.getAttribute('data-dia'));
+
+        if(!tit || !hora) return alert("Preencha o nome e o horário!");
+        if(diasAtivos.length === 0) return alert("Selecione pelo menos um dia para repetir.");
+
+        const novoAlerta = {
+            id: Date.now(),
+            tit: tit,
+            hora: hora,
+            dias: diasAtivos
+        };
+
+        lembretes.push(novoAlerta);
+        localStorage.setItem('gabi_lembretes_v2', JSON.stringify(lembretes));
+        
+        // Limpar campos
+        document.getElementById('titLembrete').value = "";
+        document.getElementById('horaLembrete').value = "";
+        document.querySelectorAll('.dia-circulo').forEach(d => d.classList.remove('active'));
+        
+        alert("Alarme configurado!");
         toggleAba('lembretes');
     }
-    function render() {
-        document.getElementById('listaLembretes').innerHTML = lembretes.map(l => `<div><b>${l.hora}</b> - ${l.tit}</div>`).join('');
+
+    function excluirLembrete(id) {
+        if(confirm("Deseja remover este alarme?")) {
+            lembretes = lembretes.filter(l => l.id !== id);
+            localStorage.setItem('gabi_lembretes_v2', JSON.stringify(lembretes));
+            render();
+        }
     }
+
+    function render() {
+        const lista = document.getElementById('listaLembretes');
+        if (lembretes.length === 0) {
+            lista.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum alarme ativo.</p>';
+            return;
+        }
+
+        lista.innerHTML = lembretes.map(l => `
+            <div class="alarme-card">
+                <div class="alarme-info">
+                    <span class="alarme-hora">${l.hora}</span>
+                    <span class="alarme-nome">${l.tit}</span>
+                    <span class="alarme-dias">${l.dias.join(' • ')}</span>
+                </div>
+                <button class="btn-excluir" onclick="excluirLembrete(${l.id})">Excluir</button>
+            </div>
+        `).join('');
+    }
+
+    // Iniciar na aba de lista
+    window.onload = render;
 </script>
+
 </body>
 </html>
