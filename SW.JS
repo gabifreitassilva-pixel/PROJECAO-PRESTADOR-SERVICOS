@@ -1,13 +1,13 @@
-const CACHE_NAME = 'glicogabi-v9';
+const CACHE_NAME = 'glicogabi-v10';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
   'CONSULTA E EXAMES.HTML',
-  'HISTÓRICO.HTML',
+  'HISTÓRICO.HTML', // Conferido com acento conforme ficheiro
   'ESTOQUES.HTML',
   'AJUSTES.HTML',
   'LEMBRETES.HTML',
-  'ÍCONE.PNG',
+  'ÍCONE.PNG',      // Conferido com acento conforme ficheiro
   'MANIFEST.JSON'
 ];
 
