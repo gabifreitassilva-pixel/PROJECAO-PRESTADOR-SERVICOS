@@ -63,9 +63,7 @@
         const dados = localStorage.getItem('gabi_ajustes_vFinal');
         if (dados) {
             const doses = JSON.parse(dados);
-            document.getElementById('dosesAjustesHome').innerHTML = doses.map(d => `
-                <div class="dose-card-topo"><span>${d.nome}</span><b>${d.qtd}</b></div>
-            `).join('');
+            document.getElementById('dosesAjustesHome').innerHTML = doses.map(d => `<div class="dose-card-topo"><span>${d.nome}</span><b>${d.qtd}</b></div>`).join('');
         }
     }
 
@@ -94,13 +92,11 @@
         const dataFiltro = document.getElementById('data-retro').value || new Date().toISOString().split('T')[0];
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
         
-        // Filtra apenas o dia selecionado
         const registrosDoDia = historico.filter(reg => reg.data === dataFiltro);
         
         historicoDiv.innerHTML = "";
         let grupos = {};
 
-        // Agrupa por momento para permitir múltiplos registros no mesmo card
         registrosDoDia.forEach(reg => {
             if (!grupos[reg.momento]) grupos[reg.momento] = [];
             grupos[reg.momento].push(reg);
@@ -112,17 +108,17 @@
             
             let feedback = ""; let classe = "";
             if (ultimo.valor < 70) { 
-                feedback = "Hipoglicemia! Consumir 15g de carboidrato rápido e repetir em 15min."; 
+                feedback = "Hipoglicemia! Consumir 15g de carboidrato rápido.";
                 classe = "perigo"; 
             } else if (ultimo.valor <= 130) { 
-                feedback = "Valor excelente! Mantenha o foco."; 
+                feedback = "Valor excelente! Mantenha o foco.";
                 classe = "excelente"; 
             } else if (ultimo.valor <= 180) { 
-                feedback = "Um pouco alto. Beba água e monitore."; 
+                feedback = "Um pouco alto. Beba água e monitore.";
                 classe = "alerta"; 
             } else {
                 let unidades = Math.ceil((ultimo.valor - ALVO) / FSI);
-                feedback = `Elevada. Sugestão: aplicar +${unidades} UI de Insulina Regular para correção.`;
+                feedback = `Elevada. Sugestão: aplicar +${unidades} UI de Insulina Regular.`;
                 classe = "perigo";
             }
 
