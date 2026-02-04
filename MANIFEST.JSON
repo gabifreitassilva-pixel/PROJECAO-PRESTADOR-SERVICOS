@@ -1,13 +1,14 @@
 {
-  "name": "GlicoGabi",
+  "name": "GlicoGabi - Controle de Glicose",
   "short_name": "GlicoGabi",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#7e57ff",
   "theme_color": "#7e57ff",
+  "description": "Monitoramento completo de glicemia e estoque de insumos.",
   "icons": [
     {
-      "src": "ICONE.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
