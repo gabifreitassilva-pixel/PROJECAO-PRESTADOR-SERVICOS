@@ -25,6 +25,7 @@
         .main-val { font-size: 26px; font-weight: bold; color: #333; }
         .feedback-txt { font-size: 13px; font-weight: bold; margin-top: 5px; }
         .excelente { color: var(--verde); } .alerta { color: var(--laranja); } .perigo { color: var(--vermelho); }
+        .sub-list { margin-top: 8px; font-size: 12px; color: #666; border-top: 1px dashed #eee; padding-top: 8px; }
     </style>
 </head>
 <body>
@@ -55,13 +56,16 @@
 </div>
 
 <script>
-    const ALVO = 130; const FSI = 72;
+    const ALVO = 130;
+    const FSI = 72;
 
     function carregarDoses() {
         const dados = localStorage.getItem('gabi_ajustes_vFinal');
         if (dados) {
             const doses = JSON.parse(dados);
-            document.getElementById('dosesAjustesHome').innerHTML = doses.map(d => `<div class="dose-card-topo"><span>${d.nome}</span><b>${d.qtd}</b></div>`).join('');
+            document.getElementById('dosesAjustesHome').innerHTML = doses.map(d => `
+                <div class="dose-card-topo"><span>${d.nome}</span><b>${d.qtd}</b></div>
+            `).join('');
         }
     }
 
@@ -89,32 +93,53 @@
         const historicoDiv = document.getElementById('historico');
         const dataFiltro = document.getElementById('data-retro').value || new Date().toISOString().split('T')[0];
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        
+        // Filtra apenas o dia selecionado
         const registrosDoDia = historico.filter(reg => reg.data === dataFiltro);
         
         historicoDiv.innerHTML = "";
+        let grupos = {};
 
-        registrosDoDia.slice().reverse().forEach(reg => {
+        // Agrupa por momento para permitir múltiplos registros no mesmo card
+        registrosDoDia.forEach(reg => {
+            if (!grupos[reg.momento]) grupos[reg.momento] = [];
+            grupos[reg.momento].push(reg);
+        });
+
+        Object.keys(grupos).forEach(momento => {
+            const itens = grupos[momento];
+            const ultimo = itens[itens.length - 1];
+            
             let feedback = ""; let classe = "";
-            if (reg.valor < 70) { feedback = "Hipoglicemia! Consumir 15g de carboidrato."; classe = "perigo"; }
-            else if (reg.valor <= 130) { feedback = "Valor excelente!"; classe = "excelente"; }
-            else if (reg.valor <= 180) { feedback = "Um pouco alto. Beba água."; classe = "alerta"; }
-            else { 
-                let unidades = Math.ceil((reg.valor - ALVO) / FSI);
-                feedback = `Elevada. Sugestão: +${unidades} UI Insulina Regular.`; 
+            if (ultimo.valor < 70) { 
+                feedback = "Hipoglicemia! Consumir 15g de carboidrato rápido e repetir em 15min."; 
                 classe = "perigo"; 
+            } else if (ultimo.valor <= 130) { 
+                feedback = "Valor excelente! Mantenha o foco."; 
+                classe = "excelente"; 
+            } else if (ultimo.valor <= 180) { 
+                feedback = "Um pouco alto. Beba água e monitore."; 
+                classe = "alerta"; 
+            } else {
+                let unidades = Math.ceil((ultimo.valor - ALVO) / FSI);
+                feedback = `Elevada. Sugestão: aplicar +${unidades} UI de Insulina Regular para correção.`;
+                classe = "perigo";
             }
 
             const card = document.createElement('div');
             card.className = 'group-card';
             card.innerHTML = `
                 <div class="group-header">
-                    <span class="momento-txt">${reg.momento}</span>
-                    <span class="data-hora-txt">${reg.data.split('-').reverse().join('/')} às ${reg.hora}</span>
+                    <span class="momento-txt">${momento}</span>
+                    <span class="data-hora-txt">${ultimo.data.split('-').reverse().join('/')}</span>
                 </div>
-                <div class="main-val">${reg.valor} mg/dL</div>
+                <div class="main-val">${ultimo.valor} mg/dL</div>
                 <div class="feedback-txt ${classe}">${feedback}</div>
+                <div class="sub-list">
+                    ${itens.map(it => `<div>└ ${it.hora} - <b>${it.valor} mg/dL</b></div>`).join('')}
+                </div>
             `;
-            historicoDiv.appendChild(card);
+            historicoDiv.prepend(card);
         });
     }
 
