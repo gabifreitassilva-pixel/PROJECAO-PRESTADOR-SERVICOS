@@ -1,11 +1,11 @@
 {
-  "name": "GlicoGabi - Controle de Glicose",
-  "short_name": "GlicoGabi",
+  "name": "Controle de Glicose - Gabi",
+  "short_name": "GlicoseGabi",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#7e57ff",
   "theme_color": "#7e57ff",
-  "description": "Monitorização de glicemia e estoque de insumos.",
+  "description": "App de controle glicêmico da Gabi",
   "icons": [
     {
       "src": "ÍCONE.PNG",
