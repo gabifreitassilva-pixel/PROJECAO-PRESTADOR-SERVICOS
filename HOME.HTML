@@ -9,6 +9,7 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: #fdfbff; margin: 0; padding: 20px; color: #333; padding-bottom: 80px; }
         h2 { color: var(--primaria); text-align: center; }
         .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid var(--primaria); position: relative; }
+        /* Estilo do Botão de Excluir */
         .btn-excluir { position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 10px; font-weight: bold; }
         label { display: block; margin-top: 10px; font-weight: bold; color: var(--primaria); }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
@@ -18,13 +19,10 @@
     </style>
 </head>
 <body>
-
     <h2>📊 Lançamentos</h2>
-
     <div class="card">
         <label>Glicemia (mg/dL):</label>
         <input type="number" id="glicemia" placeholder="Ex: 120">
-
         <label>Refeição:</label>
         <select id="refeicao">
             <option value="Jejum">Jejum</option>
@@ -32,33 +30,28 @@
             <option value="Pós-Prandial">Pós-Prandial</option>
             <option value="Antes de Dormir">Antes de Dormir</option>
         </select>
-
         <label>Carboidratos (g):</label>
         <input type="number" id="carbos" placeholder="Ex: 45">
-
         <button class="btn-salvar" onclick="calcularESalvar()">Calcular e Salvar</button>
     </div>
-
     <div id="resultadoInsulina" class="resultado" style="display:none;"></div>
-
     <div class="historico-lista" id="listaMedicoes"></div>
 
     <script>
-        // Lógica de cálculos mantida sem alterações
         function calcularESalvar() {
-            const glicemia = document.getElementById('glicemia').value;
-            const carbos = document.getElementById('carbos').value;
+            const glicemia = parseFloat(document.getElementById('glicemia').value);
+            const carbos = parseFloat(document.getElementById('carbos').value) || 0;
             const refeicao = document.getElementById('refeicao').value;
 
             if (!glicemia) { alert("Por favor, insira a glicemia."); return; }
 
-            // Parâmetros de exemplo (Ajuste conforme seus valores reais se necessário)
-            const meta = 100;
-            const fatorSensibilidade = 50;
-            const relacaoCarbo = 15;
+            // PUXA OS DADOS DE AJUSTES (Lógica original restaurada)
+            const ajustes = JSON.parse(localStorage.getItem('ajustesGlicoGabi')) || {
+                meta: 100, sensibilidade: 50, relacao: 15
+            };
 
-            let doseCorrecao = Math.max(0, (glicemia - meta) / fatorSensibilidade);
-            let doseCarbo = carbos / relacaoCarbo;
+            let doseCorrecao = Math.max(0, (glicemia - ajustes.meta) / ajustes.sensibilidade);
+            let doseCarbo = carbos / ajustes.relacao;
             let doseTotal = Math.round(doseCorrecao + doseCarbo);
 
             const agora = new Date();
@@ -73,14 +66,15 @@
             localStorage.setItem('medicoes', JSON.stringify(medicoes));
 
             // Atualiza estoque
-            let estoque = JSON.parse(localStorage.getItem('estoqueInsulina')) || 0;
+            let estoque = parseFloat(localStorage.getItem('estoqueInsulina')) || 0;
             localStorage.setItem('estoqueInsulina', Math.max(0, estoque - doseTotal));
 
             document.getElementById('resultadoInsulina').style.display = 'block';
             document.getElementById('resultadoInsulina').innerText = `Aplicar: ${doseTotal} unidades de Insulina`;
             
             exibirMedicoes();
-            limparCampos();
+            document.getElementById('glicemia').value = '';
+            document.getElementById('carbos').value = '';
         }
 
         function exibirMedicoes() {
@@ -91,6 +85,7 @@
             medicoes.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'card';
+                // BOTÃO DE EXCLUIR INCLUÍDO NO CARD
                 div.innerHTML = `
                     <button class="btn-excluir" onclick="excluirRegistro(${index})">EXCLUIR</button>
                     <p><strong>Glicemia:</strong> ${item.glicemia} mg/dL (${item.refeicao})</p>
@@ -101,7 +96,6 @@
             });
         }
 
-        // Nova função de exclusão
         function excluirRegistro(index) {
             if (confirm("Deseja apagar este registro?")) {
                 let medicoes = JSON.parse(localStorage.getItem('medicoes')) || [];
@@ -110,12 +104,6 @@
                 exibirMedicoes();
             }
         }
-
-        function limparCampos() {
-            document.getElementById('glicemia').value = '';
-            document.getElementById('carbos').value = '';
-        }
-
         window.onload = exibirMedicoes;
     </script>
 </body>
