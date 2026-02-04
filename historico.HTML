@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlicoGabi - Linha do Tempo</title>
+    <style>
+        :root {
+            --primaria: #7e57ff;
+            --laranja: #ff9800;
+            --verde: #4caf50;
+            --bg-input: #f4f0ff;
+            --cinza: #666;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .outer-frame {
+            border: 8px solid var(--primaria);
+            border-radius: 35px;
+            padding: 5px;
+            background-color: var(--primaria);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .container {
+            width: 100%;
+            background: white;
+            min-height: 80vh;
+            border-radius: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: var(--primaria);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 { margin: 0; font-size: 26px; }
+        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+
+        .input-area {
+            background-color: var(--bg-input);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--primaria);
+            text-transform: uppercase;
+            margin-left: 5px;
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea { height: 80px; resize: none; }
+
+        button#btn-salvar {
+            background-color: var(--laranja);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .history-list { padding: 0 15px 20px; }
+
+        /* Estilo do Card na Linha do Tempo */
+        .group-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            border-left: 6px solid var(--primaria);
+            position: relative;
+        }
+
+        .group-header {
+            padding: 8px 15px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--primaria);
+        }
+
+        .main-entry { padding: 15px; }
+        .description-text { font-size: 14px; color: #333; line-height: 1.5; }
+
+        .btn-excluir {
+            background: none;
+            border: none;
+            color: #ddd;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer-frame">
+    <div class="container">
+        <div class="header">
+            <h1>Linha do Tempo</h1>
+            <p>Evolução da Gabriela</p>
+        </div>
+
+        <div class="input-area">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label>Mês</label>
+                    <select id="mes">
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label>Ano</label>
+                    <input type="number" id="ano" value="2022">
+                </div>
+            </div>
+
+            <label>Descrição do Evento</label>
+            <textarea id="descricao" placeholder="O que aconteceu nesse período?"></textarea>
+
+            <button id="btn-salvar" onclick="salvarHistorico()">Salvar Dados</button>
+        </div>
+
+        <div id="historicoEventos" class="history-list"></div>
+    </div>
+</div>
+
+<script>
+    let eventos = [];
+
+    const nomesMeses = [
+        "", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    function salvarHistorico() {
+        const mes = document.getElementById('mes').value;
+        const ano = document.getElementById('ano').value;
+        const descricao = document.getElementById('descricao').value;
+
+        if (!descricao || !ano) {
+            alert("Preencha o ano e a descrição!");
+            return;
+        }
+
+        const novoEvento = {
+            id: Date.now(),
+            mes: parseInt(mes),
+            ano: parseInt(ano),
+            descricao: descricao,
+            // Cálculo para ordenação: Ano * 12 + mês (ex: 2022*12 + 1)
+            timestamp: (parseInt(ano) * 12) + parseInt(mes)
+        };
+
+        eventos.push(novoEvento);
+        
+        // ORDENAÇÃO: Do menor para o maior (2022 -> 2023 -> 2024)
+        eventos.sort((a, b) => a.timestamp - b.timestamp);
+
+        renderizar();
+
+        // Limpa apenas a descrição para agilizar o próximo cadastro
+        document.getElementById('descricao').value = "";
+    }
+
+    function excluirEvento(id) {
+        eventos = eventos.filter(e => e.id !== id);
+        renderizar();
+    }
+
+    function renderizar() {
+        const lista = document.getElementById('historicoEventos');
+        lista.innerHTML = "";
+
+        eventos.forEach(e => {
+            const card = document.createElement('div');
+            card.className = 'group-card';
+            
+            card.innerHTML = `
+                <div class="group-header">
+                    <span>${nomesMeses[e.mes]} de ${e.ano}</span>
+                    <button class="btn-excluir" onclick="excluirEvento(${e.id})">×</button>
+                </div>
+                <div class="main-entry">
+                    <div class="description-text">${e.descricao}</div>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlicoGabi - v5</title>
+    <style>
+        :root {
+            --primaria:#7e57ff;
+            --laranja:#ff9800;
+            --verde:#4caf50;
+            --vermelho:#ff5252;
+            --bg-input:#f4f0ff;
+        }
+
+        body {
+            font-family:'Segoe UI',sans-serif;
+            background:#f0f0f0;
+            margin:0;
+            display:flex;
+            justify-content:center;
+            padding:15px;
+        }
+
+        .outer-frame {
+            border:8px solid var(--primaria);
+            border-radius:35px;
+            padding:5px;
+            background:var(--primaria);
+            width:100%;
+            max-width:400px;
+        }
+
+        .container {
+            background:white;
+            height:85vh;
+            border-radius:25px;
+            overflow-y:auto;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .header {
+            background:var(--primaria);
+            color:white;
+            padding:25px;
+            text-align:center;
+        }
+
+        .tabs {
+            display:flex;
+            background:var(--bg-input);
+            margin:10px 15px;
+            border-radius:12px;
+            padding:5px;
+        }
+
+        .tab-btn {
+            flex:1;
+            padding:12px;
+            border:none;
+            background:none;
+            font-weight:bold;
+            color:var(--primaria);
+            border-radius:8px;
+            cursor:pointer;
+            font-size: 12px;
+        }
+
+        .tab-btn.active {
+            background:white;
+            box-shadow:0 2px 5px rgba(0,0,0,.1);
+        }
+
+        .input-area {
+            background:var(--bg-input);
+            margin:0 15px 15px;
+            padding:15px;
+            border-radius:20px;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        label {
+            font-size:10px;
+            font-weight:bold;
+            color:var(--primaria);
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            padding:12px;
+            border-radius:10px;
+            border:1px solid #ddd;
+            font-family: inherit;
+        }
+
+        .btn-acao {
+            background:var(--laranja);
+            color:white;
+            border:none;
+            padding:14px;
+            border-radius:12px;
+            font-weight:bold;
+            cursor:pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-roxo { background:var(--primaria); }
+        .btn-verde { background:var(--verde); }
+
+        .relatorio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .hidden { display:none !important; }
+
+        .card-ajuste {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--primaria);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer-frame">
+    <div class="container">
+        <div class="header"><h1>GlicoGabi</h1></div>
+
+        <div class="tabs">
+            <button id="tabEntrada" class="tab-btn active">Entrada</button>
+            <button id="tabEstoque" class="tab-btn">Estoque</button>
+            <button id="tabAjuste" class="tab-btn">Ajuste</button>
+        </div>
+
+        <div id="abaEntrada" class="content-section">
+            <div class="input-area">
+                <label>Nova Glicemia</label>
+                <input type="number" placeholder="mg/dL">
+                <button class="btn-acao btn-roxo">Salvar Glicemia</button>
+            </div>
+        </div>
+
+        <div id="abaEstoque" class="content-section hidden">
+             <p style="text-align:center; color:#999">Conteúdo do Estoque...</p>
+        </div>
+
+        <div id="abaAjuste" class="content-section hidden">
+            
+            <div class="input-area">
+                <label>Dosagens de Medicamentos Atuais</label>
+                <textarea id="medsAtuais" rows="4" placeholder="Ex: Insulina Glargina: 14 UI (Manhã)&#10;Metformina: 500mg (Jantar)"></textarea>
+                <button id="btnSalvarMeds" class="btn-acao btn-roxo">Salvar Dosagens</button>
+            </div>
+
+            <div class="input-area">
+                <label>Relatórios e Exportação</label>
+                
+                <button onclick="gerarRelatorio('tela')" class="btn-acao">
+                    👁️ Visualizar na Tela
+                </button>
+
+                <div class="relatorio-grid">
+                    <button onclick="gerarRelatorio('pdf')" class="btn-acao btn-roxo">
+                        📄 Gerar PDF
+                    </button>
+                    <button onclick="gerarRelatorio('whatsapp')" class="btn-acao btn-verde">
+                        💬 WhatsApp
+                    </button>
+                </div>
+            </div>
+
+            <div id="statusAjuste" style="text-align: center; font-size: 12px; color: var(--verde);"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Gerenciamento de Abas
+    const secoes = {
+        tabEntrada: 'abaEntrada',
+        tabEstoque: 'abaEstoque',
+        tabAjuste: 'abaAjuste'
+    };
+
+    Object.keys(secoes).forEach(tabId => {
+        document.getElementById(tabId).onclick = () => {
+            // Resetar botões
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
+            
+            // Ativar selecionado
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById(secoes[tabId]).classList.remove('hidden');
+        };
+    });
+
+    // Lógica da Aba Ajuste
+    const btnSalvarMeds = document.getElementById('btnSalvarMeds');
+    const medsAtuais = document.getElementById('medsAtuais');
+
+    // Carregar dados salvos
+    window.onload = () => {
+        const salvos = localStorage.getItem('gabi_medicamentos');
+        if(salvos) medsAtuais.value = salvos;
+    };
+
+    btnSalvarMeds.onclick = () => {
+        localStorage.setItem('gabi_medicamentos', medsAtuais.value);
+        const status = document.getElementById('statusAjuste');
+        status.innerText = "✅ Dosagens atualizadas!";
+        setTimeout(() => status.innerText = "", 3000);
+    };
+
+    // Funções de Relatório
+    function gerarRelatorio(tipo) {
+        const dados = medsAtuais.value || "Nenhum medicamento cadastrado.";
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        
+        const mensagemRelatorio = `📊 *RELATÓRIO GLICOGABI* (${dataAtual})\n\n*Medicamentos:* \n${dados}\n\n_Gerado pelo App GlicoGabi_`;
+
+        if(tipo === 'tela') {
+            alert("--- PRÉ-VISUALIZAÇÃO ---\n\n" + mensagemRelatorio);
+        } 
+        else if(tipo === 'pdf') {
+            alert("Iniciando geração de PDF...\n(Nota: Aqui integraremos a biblioteca jsPDF)");
+            // Quando você me enviar o modelo, faremos a função de desenho do PDF aqui.
+            window.print(); 
+        } 
+        else if(tipo === 'whatsapp') {
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagemRelatorio)}`;
+            window.open(url, '_blank');
+        }
+    }
+</script>
+
+</body>
+</html>

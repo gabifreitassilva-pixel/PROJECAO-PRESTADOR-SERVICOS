@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlicoGabi - Consultas</title>
+    <style>
+        :root {
+            --primaria: #7e57ff;
+            --laranja: #ff9800;
+            --verde: #4caf50;
+            --vermelho: #f44336;
+            --cinza: #666;
+            --bg-input: #f4f0ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .outer-frame {
+            border: 8px solid var(--primaria);
+            border-radius: 35px;
+            padding: 5px;
+            background-color: var(--primaria);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .container {
+            width: 100%;
+            background: white;
+            min-height: 80vh;
+            border-radius: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: var(--primaria);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+        .header p { margin: 10px 0 0; font-size: 16px; opacity: 0.9; }
+
+        .input-area {
+            background-color: var(--bg-input);
+            margin: 20px 15px 15px;
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--primaria);
+            margin-bottom: -5px;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            outline: none;
+        }
+
+        button#btn-salvar {
+            background-color: var(--primaria);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .history-list { padding: 0 15px 20px; }
+
+        .group-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            border-left: 6px solid var(--laranja);
+            position: relative;
+        }
+
+        .group-header {
+            padding: 10px 15px;
+            font-weight: bold;
+            background: #fafafa;
+            font-size: 13px;
+            color: var(--primaria);
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-excluir {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+
+        .main-entry { padding: 15px; }
+        .doc-name { font-size: 18px; font-weight: bold; color: #333; display: block; }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--cinza);
+            margin-top: 6px;
+        }
+
+        .tag-tipo {
+            font-size: 10px;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="outer-frame">
+    <div class="container">
+        <div class="header">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            </svg>
+            <h1>Consultas e Exames</h1>
+            <p>Agenda da Gabriela</p>
+        </div>
+
+        <div class="input-area">
+            <label>Médico ou Especialidade</label>
+            <input type="text" id="medico" placeholder="Ex: Dr. João - Cardiologista">
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label>Data</label>
+                    <input type="date" id="data_consulta">
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label>Hora</label>
+                    <input type="time" id="hora_consulta">
+                </div>
+            </div>
+
+            <label>Local / Endereço</label>
+            <input type="text" id="local" placeholder="Ex: Clínica Saúde, Rua Flores, 123">
+
+            <label>Tipo de Agendamento</label>
+            <select id="tipo">
+                <option value="Consulta">🩺 Consulta Médica</option>
+                <option value="Exame">🧪 Exame Laboratorial</option>
+                <option value="Retorno">🔄 Retorno</option>
+            </select>
+
+            <button id="btn-salvar" onclick="salvarConsulta()">Salvar Agendamento</button>
+        </div>
+
+        <div id="historicoConsultas" class="history-list"></div>
+    </div>
+</div>
+
+<script>
+    // Array para armazenar os dados e permitir a ordenação
+    let consultas = [];
+
+    function salvarConsulta() {
+        const medico = document.getElementById('medico').value;
+        const data = document.getElementById('data_consulta').value;
+        const hora = document.getElementById('hora_consulta').value;
+        const local = document.getElementById('local').value;
+        const tipo = document.getElementById('tipo').value;
+
+        if (!medico || !data || !hora || !local) {
+            alert("Por favor, preencha todos os campos!");
+            return;
+        }
+
+        // Criar um objeto de data real para comparação
+        const dataObjeto = new Date(`${data}T${hora}`);
+
+        const novoAgendamento = {
+            id: Date.now(),
+            medico,
+            data,
+            dataObjeto,
+            hora,
+            local,
+            tipo
+        };
+
+        consultas.push(novoAgendamento);
+        
+        // Ordenar: O que está mais próximo da data de hoje fica em primeiro
+        consultas.sort((a, b) => a.dataObjeto - b.dataObjeto);
+
+        renderizarCards();
+
+        // Limpar campos
+        document.getElementById('medico').value = "";
+        document.getElementById('data_consulta').value = "";
+        document.getElementById('hora_consulta').value = "";
+        document.getElementById('local').value = "";
+    }
+
+    function excluirConsulta(id) {
+        consultas = consultas.filter(c => c.id !== id);
+        renderizarCards();
+    }
+
+    function renderizarCards() {
+        const lista = document.getElementById('historicoConsultas');
+        lista.innerHTML = "";
+
+        consultas.forEach(c => {
+            const dataFormatada = c.data.split('-').reverse().join('/');
+            const card = document.createElement('div');
+            card.className = 'group-card';
+            
+            if(c.tipo === "Exame") card.style.borderLeftColor = "var(--verde)";
+            if(c.tipo === "Retorno") card.style.borderLeftColor = "var(--primaria)";
+
+            card.innerHTML = `
+                <div class="group-header">
+                    <span>📅 ${dataFormatada}</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="tag-tipo">${c.tipo}</span>
+                        <button class="btn-excluir" onclick="excluirConsulta(${c.id})">×</button>
+                    </div>
+                </div>
+                <div class="main-entry">
+                    <span class="doc-name">${c.medico}</span>
+                    <div class="info-row">
+                        <span>⏰ Horário: <b>${c.hora}</b></span>
+                    </div>
+                    <div class="info-row">
+                        <span>📍 ${c.local}</span>
+                    </div>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
