@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#7e57ff",
   "theme_color": "#7e57ff",
-  "description": "App de controle glicêmico da Gabi",
+  "description": "Monitoramento de glicemia",
   "icons": [
     {
       "src": "ÍCONE.PNG",
