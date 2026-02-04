@@ -48,7 +48,7 @@
             justify-content: center;
             gap: 10px;
             padding: 10px 15px;
-            flex-wrap: wrap; /* Permite quebrar linha se houver muitas doses */
+            flex-wrap: wrap;
         }
 
         .dose-box {
@@ -188,7 +188,6 @@
     const ultimaGlicemiaPorPeriodo = {};
     const HOJE_STR = new Date().toLocaleDateString('pt-BR');
 
-    // Função para carregar as doses da tela de Ajustes
     function carregarDoses() {
         const dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
         const container = document.getElementById('containerDosesHome');
@@ -290,7 +289,6 @@
         document.getElementById('glicemia').value = "";
     }
 
-    // Inicia carregando as doses
     window.onload = carregarDoses;
 </script>
 </body>
