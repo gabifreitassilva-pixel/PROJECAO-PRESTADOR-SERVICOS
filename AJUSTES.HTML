@@ -66,7 +66,7 @@
                     <option value="Setembro" selected>Setembro</option><option value="Outubro">Outubro</option>
                     <option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option>
                 </select>
-                <input type="text" id="selAno" style="flex: 1;" value="2024">
+                <input type="text" id="selAno" style="flex: 1;" value="2025">
             </div>
             <button class="btn-acao" onclick="verRelatorio()">1. Visualizar com Dados da Home</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
@@ -156,21 +156,24 @@
         document.getElementById('txtMes').innerText = mes.toUpperCase(); 
         document.getElementById('txtAno').innerText = ano; 
 
+        // UNIFICADO: Agora lê exatamente a chave da Home
         const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
         
         let h = ""; 
         for(let i=1; i<=31; i++) { 
             const diaDados = historico.filter(d => d.dia == i);
-            const buscar = (m) => diaDados.find(d => d.momento === m)?.valor || "";
+            
+            // Busca aprimorada para bater com os nomes do select da HOME
+            const buscar = (m) => diaDados.find(d => d.momento.toLowerCase() === m.toLowerCase())?.valor || "";
 
             h += `<tr>
                 <td>${i}</td>
                 <td>${buscar('Jejum')}</td>
-                <td>${buscar('Pós café') || buscar('Pós-Café')}</td>
-                <td>${buscar('Antes do almoço') || buscar('Pré-Almoço')}</td>
-                <td>${buscar('Depois do almoço') || buscar('Pós-Almoço')}</td>
-                <td>${buscar('Antes da janta') || buscar('Pré-Jantar')}</td>
-                <td>${buscar('Depois da janta') || buscar('Pós-Jantar')}</td>
+                <td>${buscar('Pós café')}</td>
+                <td>${buscar('Antes do almoço')}</td>
+                <td>${buscar('Depois do almoço')}</td>
+                <td>${buscar('Antes da janta')}</td>
+                <td>${buscar('Depois da janta')}</td>
                 <td>${buscar('Antes de Dormir')}</td>
                 <td></td>
             </tr>`; 
@@ -202,6 +205,7 @@
 
     function limparHistorico() {
         if(confirm("Deseja apagar todas as medidas da Home? Esta ação não pode ser desfeita.")) {
+            // UNIFICADO: Agora apaga a chave correta
             localStorage.removeItem('gabi_historico_glicemias');
             alert("Histórico limpo!");
         }
