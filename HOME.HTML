@@ -43,23 +43,20 @@
     <div id="listaDia"></div>
 
     <script>
-        // Inicia com a data de hoje
         document.getElementById('dataReg').valueAsDate = new Date();
 
         function salvar() {
-            const dataInput = document.getElementById('dataReg').value; // Formato YYYY-MM-DD
+            const dataInput = document.getElementById('dataReg').value;
             const momento = document.getElementById('momentoReg').value;
             const valor = document.getElementById('valorGlicose').value;
 
             if(!valor || !dataInput) return alert("Preencha a data e o valor!");
 
-            // Converter data para o formato de busca DD/MM/YYYY
             const partes = dataInput.split('-');
             const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
             let db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
             
-            // Adiciona o novo registro
             db.push({
                 data: dataBr,
                 dataISO: dataInput,
@@ -72,17 +69,16 @@
             document.getElementById('valorGlicose').value = "";
             
             alert("Medição salva com sucesso!");
-            listarRegistrosDia(); // Atualiza a lista embaixo na hora
+            listarRegistrosDia();
         }
 
         function listarRegistrosDia() {
             const dataInput = document.getElementById('dataReg').value;
+            if(!dataInput) return;
             const partes = dataInput.split('-');
             const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
             
             const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
-            
-            // Filtra apenas as medições do dia que está selecionado no calendário
             const filtrados = db.filter(i => i.data === dataBr);
             
             const area = document.getElementById('listaDia');
@@ -97,8 +93,6 @@
                 `).join('');
             }
         }
-
-        // Carrega os dados assim que abre a tela
         listarRegistrosDia();
     </script>
 </body>
