@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glicogabi-v4';
+const CACHE_NAME = 'glicogabi-v5';
 const ASSETS = [
   'index.html',
   'HOME.HTML',
@@ -25,4 +25,5 @@ self.addEventListener('fetch', (e) => {
       return res || fetch(e.request);
     })
   );
+
 });
