@@ -114,16 +114,6 @@ button{
 .main-entry{padding:10px 15px}
 .main-val{font-size:24px;font-weight:bold}
 .main-feedback{font-size:13px;font-weight:bold}
-.sub-entry{
-    padding:5px 15px;
-    border-top:1px dashed #eee;
-}
-.sub-time-row{font-size:11px;color:#666}
-
-.hipo{color:var(--vermelho)}
-.excelente{color:var(--verde)}
-.alerta{color:var(--laranja)}
-.hiper{color:var(--vermelho)}
 </style>
 </head>
 
@@ -168,8 +158,8 @@ button{
 <script>
 const ALVO=130;
 const FSI=72;
-const STORAGE_KEY = 'gabi_database'; 
-const DOSES_KEY = 'gabi_ajustes_vFinal'; 
+const STORAGE_KEY = 'gabi_database'; // Integra com o Relatório
+const DOSES_KEY = 'gabi_ajustes_vFinal'; // Integra com as Doses
 
 function carregarDoses() {
     const container = document.getElementById('dosesDinamicas');
@@ -181,30 +171,31 @@ function carregarDoses() {
     container.innerHTML = dosesSalvas.map(d => `<div class="dose-box">${d.nome} <b>${d.qtd}</b></div>`).join('');
 }
 
-function formatarDataParaExibir(dataISO) {
-    if(!dataISO) return new Date().toLocaleDateString("pt-BR");
-    return dataISO.split("-").reverse().join("/");
-}
-
 function salvar(){
     const valor=parseInt(document.getElementById('glicemia').value);
     const dataInput = document.getElementById('data_retro').value;
     const horaInput = document.getElementById('hora_retro').value;
     
-    if(!valor) return alert("Digite o valor da glicemia!");
+    if(!valor) return alert("Digite o valor!");
+
+    // Formata a data para o padrão brasileiro (DD/MM/AAAA)
+    const dataFormatada = dataInput ? dataInput.split("-").reverse().join("/") : new Date().toLocaleDateString("pt-BR");
+    const horaFormatada = horaInput || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 
     const registro = {
         id: Date.now(),
         momento: document.getElementById('momento').value,
         valor: valor,
-        data: dataInput ? formatarDataParaExibir(dataInput) : new Date().toLocaleDateString("pt-BR"),
-        hora: horaInput || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
+        data: dataFormatada,
+        hora: horaFormatada,
+        // Cria um timestamp para ordenação correta nos cards
         timestamp: dataInput ? new Date(dataInput + "T" + (horaInput || "00:00")).getTime() : Date.now()
     };
 
     const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     dados.push(registro);
-    // Ordena para que os mais recentes apareçam primeiro na lista
+    
+    // Ordena: mais recentes primeiro
     dados.sort((a, b) => b.timestamp - a.timestamp);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
 
@@ -212,8 +203,8 @@ function salvar(){
     renderizar();
 }
 
-function excluirRegistro(id) {
-    if(confirm("Excluir este registro?")) {
+function excluir(id) {
+    if(confirm("Excluir registro?")) {
         let dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         dados = dados.filter(r => r.id !== id);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
@@ -226,14 +217,9 @@ function renderizar(){
     lista.innerHTML = "";
     const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     
-    if(dados.length === 0) {
-        lista.innerHTML = "<p style='text-align:center; color:#999; font-size:12px;'>Nenhum registro encontrado.</p>";
-        return;
-    }
-
     dados.forEach(r => {
         let feedback="", classe="";
-        if(r.valor < 70) { feedback="Hipoglicemia! Carboidrato rápido."; classe="hipo"; }
+        if(r.valor < 70) { feedback="Hipoglicemia! Consumir açúcar."; classe="hipo"; }
         else if(r.valor <= 130) { feedback="Excelente!"; classe="excelente"; }
         else if(r.valor <= 180) { feedback="Um pouco alto. Monitore."; classe="alerta"; }
         else { 
@@ -246,10 +232,10 @@ function renderizar(){
         card.innerHTML = `
             <div class="group-header">
                 <span>${r.momento}</span>
-                <span style="font-size:10px; color:#999" onclick="excluirRegistro(${r.id})">🗑️</span>
+                <span onclick="excluir(${r.id})" style="cursor:pointer; opacity:0.3">🗑️</span>
             </div>
             <div class="main-entry">
-                <div style="font-size:10px; color:#666">${r.data} às ${r.hora}</div>
+                <div style="font-size:10px; color:#666">${r.data} - ${r.hora}</div>
                 <div class="main-val">${r.valor} mg/dL</div>
                 <div class="main-feedback ${classe}">${feedback}</div>
             </div>`;
