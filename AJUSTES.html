@@ -1,195 +1,76 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlicoGabi - Ajustes</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; --lavanda-medio: #e3d9ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; overflow-x: hidden; }
-        .container { background: white; width: 100%; min-height: 100vh; padding-bottom: 30px; display: flex; flex-direction: column; }
-        .header { background: var(--primaria); color: white; text-align: center; padding: 15px; }
-        .tabs { display: flex; background: var(--lavanda); margin: 10px 15px; border-radius: 12px; padding: 5px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: var(--primaria); cursor: pointer; border-radius: 8px; }
-        .tab-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
-        .section-box { background: var(--lavanda); margin: 0 15px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--lavanda-medio); }
-        input, select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        .btn-acao { background: var(--primaria); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; }
-        .btn-pdf { background: #9b59b6; } .btn-wpp { background: #25d366; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        th { background: var(--primaria); color: white; padding: 10px; font-size: 12px; text-align: left; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .hidden { display: none !important; }
-
-        #modalRelatorio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; overflow: auto; padding: 20px 0; }
-        .rel-topo { background: var(--primaria); color: white; padding: 15px; display: flex; justify-content: space-between; position: sticky; top: -20px; width: 100%; box-sizing: border-box; }
-        .folha { padding: 10mm; width: 277mm; margin: auto; background: white; color: black; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .tab-rel { width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed; margin-top: 10px; }
-        .tab-rel th { border: 1px solid #333; padding: 6px; background: #eee !important; color: black; font-weight: bold; }
-        .tab-rel td { border: 1px solid #333; padding: 5px; text-align: center; height: 8mm; color: black; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Glicêmico</title>
+<style>
+body{font-family:Segoe UI;background:#f2f2f2;margin:0}
+.container{padding:15px}
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    font-size:12px
+}
+th,td{
+    border:1px solid #ccc;
+    padding:5px;
+    text-align:center
+}
+th{background:#7e57ff;color:#fff}
+</style>
 </head>
 <body>
+
 <div class="container">
-    <div class="header"><h3>Ajustes GlicoGabi</h3></div>
-    <div class="tabs">
-        <button id="btnDoses" class="tab-btn active" onclick="toggleAba('doses')">Minhas Doses</button>
-        <button id="btnConfig" class="tab-btn" onclick="toggleAba('config')">Configurar</button>
-    </div>
-    
-    <div id="abaConfig" class="hidden">
-        <div class="section-box">
-            <input type="text" id="nomeMed" placeholder="Medicação (Ex: Insulina NPH)">
-            <input type="text" id="qtdMed" placeholder="Dose (Ex: 15 UI)">
-            <button class="btn-acao" onclick="salvarDose()">Salvar para a Home</button>
-        </div>
-    </div>
+<h3>Relatório Mensal</h3>
 
-    <div id="abaDoses">
-        <div class="section-box" style="padding:5px">
-            <table><thead><tr><th>Medicação</th><th>Dose</th><th>Ações</th></tr></thead><tbody id="listaMeds"></tbody></table>
-        </div>
-        <div class="section-box">
-            <input type="text" id="wppInput" placeholder="WhatsApp (DDD + Número)">
-            <div style="display: flex; gap: 5px;">
-                <select id="selMes" style="flex: 2;">
-                    <option value="">Selecione o Mês...</option>
-                    <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
-                    <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
-                    <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
-                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                </select>
-                <input type="number" id="selAno" style="flex: 1;" placeholder="Ano (Ex: 2026)">
-            </div>
-            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Relatório</button>
-            <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF Completo</button>
-            <button class="btn-acao btn-wpp" onclick="enviarWpp()">3. Enviar por WhatsApp</button>
-        </div>
-    </div>
-</div>
+<select id="mes" onchange="renderizar()">
+<option value="01">Janeiro</option>
+<option value="02">Fevereiro</option>
+<option value="03">Março</option>
+<option value="04">Abril</option>
+<option value="05">Maio</option>
+<option value="06">Junho</option>
+<option value="07">Julho</option>
+<option value="08">Agosto</option>
+<option value="09">Setembro</option>
+<option value="10">Outubro</option>
+<option value="11">Novembro</option>
+<option value="12">Dezembro</option>
+</select>
 
-<div id="modalRelatorio">
-    <div class="rel-topo"><b>RELATÓRIO MENSAL</b><button onclick="document.getElementById('modalRelatorio').style.display='none'">FECHAR X</button></div>
-    <div id="areaRel" class="folha">
-        <h2 style="text-align:center; color: #7e57ff; margin-bottom: 5px;">PLANILHA DE CONTROLE GLICÊMICO</h2>
-        <h3 style="text-align:center; margin-top: 0;">MÊS/ANO: <span id="txtMes"></span> / <span id="txtAno"></span></h3>
-        <table class="tab-rel">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width:12mm">Dia</th><th colspan="2">Café da Manhã</th><th colspan="2">Almoço</th><th colspan="2">Jantar</th><th rowspan="2">Dormir / Madrugada</th><th rowspan="2">Anotações</th>
-                </tr>
-                <tr><th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th></tr>
-            </thead>
-            <tbody id="corpoRel"></tbody>
-        </table>
-    </div>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Café Antes</th>
+<th>Café Depois</th>
+<th>Almoço Antes</th>
+<th>Almoço Depois</th>
+<th>Jantar Antes</th>
+<th>Jantar Depois</th>
+<th>Madrugada</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
 </div>
 
 <script>
-    // CHAVES UNIFICADAS COM A HOME
-    const DB_NAME = 'gabi_database'; 
-    const DOSES_KEY = 'gabi_ajustes_vFinal'; 
+const STORAGE_GLICO = "glicogabi_medicoes";
 
-    const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const mapa = {
+    "Jejum":"cafeAntes",
+    "Pós café":"cafeDepois",
+    "Antes do almoço":"almocoAntes",
+    "Depois do almoço":"almocoDepois",
+    "Antes da janta":"jantarAntes",
+    "Depois da janta":"jantarDepois",
+    "Madrugada":"madrugada"
+};
 
-    function toggleAba(aba) { 
-        document.getElementById('abaDoses').classList.toggle('hidden', aba !== 'doses'); 
-        document.getElementById('abaConfig').classList.toggle('hidden', aba !== 'config'); 
-        document.getElementById('btnDoses').classList.toggle('active', aba === 'doses');
-        document.getElementById('btnConfig').classList.toggle('active', aba === 'config');
-        if(aba === 'doses') renderDoses(); 
-    }
-
-    function salvarDose() { 
-        const nome = document.getElementById('nomeMed').value; 
-        const qtd = document.getElementById('qtdMed').value; 
-        if(!nome || !qtd) return alert("Preencha Medicação e Dose!"); 
-        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
-        dbDoses.push({nome, qtd}); 
-        localStorage.setItem(DOSES_KEY, JSON.stringify(dbDoses)); 
-        document.getElementById('nomeMed').value = "";
-        document.getElementById('qtdMed').value = "";
-        alert("Medicação salva! Verifique na Home.");
-        toggleAba('doses'); 
-    }
-
-    function renderDoses() { 
-        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
-        document.getElementById('listaMeds').innerHTML = dbDoses.map((m, i) => `<tr><td>${m.nome}</td><td>${m.qtd}</td><td><button onclick="removerDose(${i})" style="border:none; background:none; cursor:pointer;">❌</button></td></tr>`).join(''); 
-    }
-
-    function removerDose(i) { 
-        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
-        if(confirm("Remover esta medicação?")) {
-            dbDoses.splice(i, 1); 
-            localStorage.setItem(DOSES_KEY, JSON.stringify(dbDoses)); 
-            renderDoses(); 
-        }
-    }
-
-    function verRelatorio() { 
-        const mesVal = document.getElementById('selMes').value; 
-        const anoVal = document.getElementById('selAno').value;
-        if(!mesVal || !anoVal) return alert("Por favor, selecione o Mês e digite o Ano.");
-        
-        document.getElementById('txtMes').innerText = mesesNomes[parseInt(mesVal)-1].toUpperCase(); 
-        document.getElementById('txtAno').innerText = anoVal; 
-
-        // Agora busca os dados que foram salvos na Home usando a mesma chave gabi_database
-        const db = JSON.parse(localStorage.getItem(DB_NAME) || '[]'); 
-        const diasNoMes = new Date(anoVal, mesVal, 0).getDate(); 
-        let h = ""; 
-
-        for(let i=1; i<=diasNoMes; i++) { 
-            const diaPad = i.toString().padStart(2, '0');
-            const dataBusca = `${diaPad}/${mesVal}/${anoVal}`;
-            const doDia = db.filter(reg => reg.data === dataBusca);
-
-            const buscar = (momento) => {
-                // Procura o registro pelo nome do momento (igual ao select da Home)
-                const r = doDia.find(reg => reg.momento === momento);
-                return r ? r.valor : "";
-            };
-
-            h += `<tr>
-                <td>${diaPad}</td>
-                <td>${buscar('Jejum')}</td>
-                <td>${buscar('Pós café')}</td>
-                <td>${buscar('Antes do almoço')}</td>
-                <td>${buscar('Depois do almoço')}</td>
-                <td>${buscar('Antes da janta')}</td>
-                <td>${buscar('Depois da janta')}</td>
-                <td>${buscar('Madrugada')}</td>
-                <td></td>
-            </tr>`; 
-        } 
-        document.getElementById('corpoRel').innerHTML = h; 
-        document.getElementById('modalRelatorio').style.display = "block"; 
-    }
-
-    function exportarPDF() { 
-        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano antes.");
-        verRelatorio();
-        const element = document.getElementById('areaRel');
-        const opt = { 
-            margin: [5, 5, 5, 5], 
-            filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}_${document.getElementById('selAno').value}.pdf`, 
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        }; 
-        html2pdf().from(element).set(opt).save(); 
-    }
-
-    function enviarWpp() { 
-        const num = document.getElementById('wppInput').value; 
-        if(!num) return alert("Informe o número!");
-        const msg = `Segue meu relatório GlicoGabi mensal referente a ${document.getElementById('selMes').value}/${document.getElementById('selAno').value}.`;
-        window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`); 
-    }
-
-    window.onload = renderDoses;
-</script>
-</body>
-</html>
+function renderizar(){
+    const mesSelecionado = mes.value;
+    const dados = JSON.parse(localStorage.getItem(STORAGE_GLICO_
