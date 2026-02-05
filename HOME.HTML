@@ -55,7 +55,7 @@ body{
     display:flex;
     gap:10px;
     padding:10px 15px;
-    overflow-x: auto; /* Permite rolar se houver muitas doses */
+    overflow-x: auto;
 }
 .dose-box{
     border:1px solid #eee;
@@ -108,6 +108,8 @@ button{
     padding:8px 15px;
     font-weight:bold;
     background:#fafafa;
+    display: flex;
+    justify-content: space-between;
 }
 .main-entry{padding:10px 15px}
 .main-val{font-size:24px;font-weight:bold}
@@ -135,8 +137,7 @@ button{
 <p>Olá, Gabriela! Vamos cuidar da saúde?</p>
 </div>
 
-<div class="doses-container" id="dosesDinamicas">
-    </div>
+<div class="doses-container" id="dosesDinamicas"></div>
 
 <div class="input-area">
 <select id="momento">
@@ -167,127 +168,99 @@ button{
 <script>
 const ALVO=130;
 const FSI=72;
+const STORAGE_KEY = 'gabi_database'; 
+const DOSES_KEY = 'gabi_ajustes_vFinal'; 
 
-/* SINCRONIZAÇÃO COM AJUSTES.HTML */
-const STORAGE_KEY = 'gabi_database'; // Mesma chave usada no relatório para ler os dados
-const DOSES_KEY = 'gabi_ajustes_vFinal'; // Mesma chave usada para salvar as medicações
-
-let ultimaGlicemiaPorPeriodo={};
-
-// Função para carregar as doses da aba Ajustes
 function carregarDoses() {
     const container = document.getElementById('dosesDinamicas');
     const dosesSalvas = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
-    
     if (dosesSalvas.length === 0) {
-        container.innerHTML = '<div class="dose-box">Nenhuma dose cadastrada</div>';
+        container.innerHTML = '<div class="dose-box">Sem doses</div>';
         return;
     }
-
-    container.innerHTML = dosesSalvas.map(d => `
-        <div class="dose-box">${d.nome} <b>${d.qtd}</b></div>
-    `).join('');
+    container.innerHTML = dosesSalvas.map(d => `<div class="dose-box">${d.nome} <b>${d.qtd}</b></div>`).join('');
 }
 
-function dataAtual(){
-    return data_retro.value
-        ? data_retro.value.split("-").reverse().join("/")
-        : new Date().toLocaleDateString("pt-BR");
+function formatarDataParaExibir(dataISO) {
+    if(!dataISO) return new Date().toLocaleDateString("pt-BR");
+    return dataISO.split("-").reverse().join("/");
 }
 
 function salvar(){
-    const valor=parseInt(glicemia.value);
-    if(!valor)return;
+    const valor=parseInt(document.getElementById('glicemia').value);
+    const dataInput = document.getElementById('data_retro').value;
+    const horaInput = document.getElementById('hora_retro').value;
+    
+    if(!valor) return alert("Digite o valor da glicemia!");
 
-    const registro={
-        momento:momento.value,
-        valor,
-        data:dataAtual(),
-        hora:hora_retro.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+    const registro = {
+        id: Date.now(),
+        momento: document.getElementById('momento').value,
+        valor: valor,
+        data: dataInput ? formatarDataParaExibir(dataInput) : new Date().toLocaleDateString("pt-BR"),
+        hora: horaInput || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
+        timestamp: dataInput ? new Date(dataInput + "T" + (horaInput || "00:00")).getTime() : Date.now()
     };
 
-    const dados=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];
+    const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     dados.push(registro);
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(dados));
+    // Ordena para que os mais recentes apareçam primeiro na lista
+    dados.sort((a, b) => b.timestamp - a.timestamp);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
 
-    renderizar(dataAtual());
-    glicemia.value="";
+    document.getElementById('glicemia').value = "";
+    renderizar();
 }
 
-function renderizar(dataFiltro){
-    historico.innerHTML="";
-    ultimaGlicemiaPorPeriodo={};
+function excluirRegistro(id) {
+    if(confirm("Excluir este registro?")) {
+        let dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        dados = dados.filter(r => r.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+        renderizar();
+    }
+}
 
-    const dados=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];
-    // Filtra apenas para o dia selecionado
-    const filtrados = dados.filter(r=>r.data===dataFiltro);
+function renderizar(){
+    const lista = document.getElementById('historico');
+    lista.innerHTML = "";
+    const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     
-    if(filtrados.length === 0) {
-        historico.innerHTML = "<p style='text-align:center; color:#999; font-size:12px;'>Nenhum registro para esta data.</p>";
+    if(dados.length === 0) {
+        lista.innerHTML = "<p style='text-align:center; color:#999; font-size:12px;'>Nenhum registro encontrado.</p>";
+        return;
     }
 
-    filtrados.forEach(r=>criarCard(r));
+    dados.forEach(r => {
+        let feedback="", classe="";
+        if(r.valor < 70) { feedback="Hipoglicemia! Carboidrato rápido."; classe="hipo"; }
+        else if(r.valor <= 130) { feedback="Excelente!"; classe="excelente"; }
+        else if(r.valor <= 180) { feedback="Um pouco alto. Monitore."; classe="alerta"; }
+        else { 
+            feedback = `Sugestão: +${Math.ceil((r.valor-ALVO)/FSI)}un Regular.`; 
+            classe="hiper"; 
+        }
+
+        const card = document.createElement("div");
+        card.className = "group-card";
+        card.innerHTML = `
+            <div class="group-header">
+                <span>${r.momento}</span>
+                <span style="font-size:10px; color:#999" onclick="excluirRegistro(${r.id})">🗑️</span>
+            </div>
+            <div class="main-entry">
+                <div style="font-size:10px; color:#666">${r.data} às ${r.hora}</div>
+                <div class="main-val">${r.valor} mg/dL</div>
+                <div class="main-feedback ${classe}">${feedback}</div>
+            </div>`;
+        lista.appendChild(card);
+    });
 }
 
-function criarCard(r){
-    let feedback="",classe="";
-    const ultima=ultimaGlicemiaPorPeriodo[r.momento];
-    const primeira=ultima===undefined;
-    const subiu=!primeira && r.valor>ultima;
-
-    if(r.valor<70){
-        feedback="Hipoglicemia! Consumir carboidrato rápido.";
-        classe="hipo";
-    }else if(r.valor<=130){
-        feedback="Valor excelente! Continue cuidando de você.";
-        classe="excelente";
-    }else if(r.valor<=180){
-        feedback="Valor um pouco alto. Beba água e monitore.";
-        classe="alerta";
-    }else{
-        feedback=(primeira||subiu)
-            ?`Valor elevado. Sugestão: +${Math.ceil((r.valor-ALVO)/FSI)}un Regular e água.`
-            :"Aguarde a ação da dose anterior e hidrate.";
-        classe="hiper";
-    }
-
-    const id="card-"+r.momento.replace(/\s/g,"");
-    let card=document.getElementById(id);
-
-    if(!card){
-        card=document.createElement("div");
-        card.id=id;
-        card.className="group-card";
-        card.innerHTML=`
-        <div class="group-header">${r.momento}</div>
-        <div class="main-entry">
-            <div style="font-size:10px">${r.data} - ${r.hora}</div>
-            <div class="main-val">${r.valor} mg/dL</div>
-            <div class="main-feedback ${classe}">${feedback}</div>
-        </div>
-        <div class="sub-list"></div>`;
-        historico.appendChild(card);
-    }else{
-        const sub=document.createElement("div");
-        sub.className="sub-entry";
-        sub.innerHTML=`
-        <div class="sub-time-row">${r.hora} - ${r.valor} mg/dL</div>
-        <div class="${classe}">${feedback}</div>`;
-        card.querySelector(".sub-list").appendChild(sub);
-    }
-
-    ultimaGlicemiaPorPeriodo[r.momento]=r.valor;
-}
-
-// Escuta mudanças no calendário para atualizar a lista
-data_retro.addEventListener("change",()=>renderizar(dataAtual()));
-
-// Inicialização
 window.onload = function() {
     carregarDoses();
-    renderizar(dataAtual());
+    renderizar();
 };
 </script>
-
 </body>
 </html>
