@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GlicoGabi</title>
+
+<style>
+:root{
+    --primaria:#7e57ff;
+    --laranja:#ff9800;
+    --verde:#4caf50;
+    --vermelho:#f44336;
+}
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f0f0f0;
+    margin:0;
+    padding:0;
+    display:flex;
+    justify-content:center;
+}
+
+/* FRAME */
+.outer-frame{
+    border:8px solid var(--primaria);
+    border-radius:35px;
+    background:var(--primaria);
+    width:100%;
+    max-width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* CONTAINER */
+.container{
+    background:white;
+    flex:1;
+    border-radius:25px;
+    margin:5px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+/* HEADER */
+.header{
+    background:var(--primaria);
+    color:white;
+    padding:30px 20px;
+    text-align:center;
+}
+.header h1{margin:0;font-size:32px}
+.header p{margin-top:8px;font-size:15px}
+
+/* DOSES */
+.doses-container{
+    display:flex;
+    gap:10px;
+    padding:10px 15px;
+}
+.dose-box{
+    border:1px solid #eee;
+    border-radius:10px;
+    padding:5px;
+    flex:1;
+    font-size:11px;
+    text-align:center;
+}
+
+/* INPUT */
+.input-area{
+    background:#f4f0ff;
+    margin:0 15px 15px;
+    padding:15px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+select,input{
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ddd;
+}
+.retro-row{display:flex;gap:8px}
+.retro-row input{flex:1;font-size:11px}
+button{
+    background:var(--primaria);
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* CARDS */
+.history-list{padding:0 15px 20px}
+
+.group-card{
+    background:white;
+    border-radius:15px;
+    margin-bottom:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    border-left:5px solid var(--laranja);
+}
+.group-header{
+    padding:8px 15px;
+    font-weight:bold;
+    background:#fafafa;
+}
+.main-entry{padding:10px 15px}
+.main-val{font-size:24px;font-weight:bold}
+.main-feedback{font-size:13px;font-weight:bold}
+.sub-entry{
+    padding:5px 15px;
+    border-top:1px dashed #eee;
+}
+.sub-time-row{font-size:11px;color:#666}
+
+/* CORES */
+.hipo{color:var(--vermelho)}
+.excelente{color:var(--verde)}
+.alerta{color:var(--laranja)}
+.hiper{color:var(--vermelho)}
+</style>
+</head>
+
+<body>
+
+<div class="outer-frame">
+<div class="container">
+
+<div class="header">
+<h1>GlicoGabi</h1>
+<p>Olá, Gabriela! Vamos cuidar da saúde?</p>
+</div>
+
+<div class="doses-container">
+<div class="dose-box">NPH <b id="doseNPH">10un</b></div>
+<div class="dose-box">Regular <b id="doseRegular">15un</b></div>
+<div class="dose-box">Metf. <b id="doseMetf">850mg</b></div>
+</div>
+
+<div class="input-area">
+<select id="momento">
+<option>Jejum</option>
+<option>Pós café</option>
+<option>Antes do almoço</option>
+<option>Depois do almoço</option>
+<option>Antes da janta</option>
+<option>Depois da janta</option>
+<option>Madrugada</option>
+</select>
+
+<input type="number" id="glicemia" placeholder="mg/dL">
+
+<div class="retro-row">
+<input type="date" id="data_retro">
+<input type="time" id="hora_retro">
+</div>
+
+<button onclick="salvar()">Salvar Registro</button>
+</div>
+
+<div id="historico" class="history-list"></div>
+
+</div>
+</div>
+
+<script>
+const STORAGE_GLICO="glicogabi_medicoes";
+const STORAGE_DOSES="glicogabi_doses";
+const ALVO=130;
+const FSI=72;
+
+let ultimaPorMomento={};
+
+function dataAtiva(){
+    return data_retro.value || new Date().toISOString().split("T")[0];
+}
+
+function carregarDoses(){
+    const d=JSON.parse(localStorage.getItem(STORAGE_DOSES));
+    if(!d) return;
+    doseNPH.innerText=d.nph+"un";
+    doseRegular.innerText=d.regular+"un";
+    doseMetf.innerText=d.metformina+"mg";
+}
+
+function salvar(){
+    const valor=parseInt(glicemia.value);
+    if(!valor) return;
+
+    const registro={
+        momento:momento.value,
+        valor,
+        data:dataAtiva(),
+        hora:hora_retro.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+    };
+
+    const dados=JSON.parse(localStorage.getItem(STORAGE_GLICO))||[];
+    dados.push(registro);
+    localStorage.setItem(STORAGE_GLICO,JSON.stringify(dados));
+
+    renderizar();
+    glicemia.value="";
+}
+
+function analisar(valor,subiu){
+    if(valor<70) return ["Hipoglicemia! Consumir carboidrato rápido.","hipo"];
+    if(valor<=130) return ["Valor excelente!","excelente"];
+    if(valor<=180) return ["Valor elevado. Hidrate-se.","alerta"];
+    if(subiu){
+        return [`Valor elevado. Sugestão: +${Math.ceil((valor-ALVO)/FSI)}un Regular e água.`,"hiper"];
+    }
+    return ["Aguarde a ação da dose anterior e hidrate.","hiper"];
+}
+
+function renderizar(){
+    historico.innerHTML="";
+    ultimaPorMomento={};
+
+    const dia=dataAtiva();
+    const dados=JSON.parse(localStorage.getItem(STORAGE_GLICO))||[];
+
+    dados.filter(r=>r.data===dia).forEach(r=>{
+        const id="card-"+r.momento.replace(/\s/g,"");
+        const ultima=ultimaPorMomento[r.momento];
+        const subiu=ultima!==undefined && r.valor>ultima;
+
+        const [msg,classe]=analisar(r.valor,subiu);
+
+        let card=document.getElementById(id);
+        if(!card){
+            card=document.createElement("div");
+            card.className="group-card";
+            card.id=id;
+            card.innerHTML=`
+            <div class="group-header">${r.momento}</div>
+            <div class="main-entry">
+                <div style="font-size:10px">${r.data.split("-").reverse().join("/")} - ${r.hora}</div>
+                <div class="main-val">${r.valor} mg/dL</div>
+                <div class="main-feedback ${classe}">${msg}</div>
+            </div>
+            <div class="subs"></div>`;
+            historico.appendChild(card);
+        }else{
+            const sub=document.createElement("div");
+            sub.className="sub-entry";
+            sub.innerHTML=`
+            <div class="sub-time-row">${r.hora} - ${r.valor} mg/dL</div>
+            <div class="${classe}">${msg}</div>`;
+            card.querySelector(".subs").appendChild(sub);
+        }
+        ultimaPorMomento[r.momento]=r.valor;
+    });
+}
+
+data_retro.addEventListener("change",renderizar);
+carregarDoses();
+renderizar();
+</script>
+
+</body>
+</html>
