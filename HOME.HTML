@@ -2,46 +2,87 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GlicoGabi</title>
-    <link rel="manifest" href="MANIFEST.JSON">
-    <meta name="theme-color" content="#7e57ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Registro</title>
     <style>
-        :root { --primaria: #7e57ff; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: white; display: flex; flex-direction: column; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        #janela { flex: 1; border: none; width: 100%; }
-        .nav-tabs { display: flex; background: white; border-top: 1px solid #eee; padding-bottom: env(safe-area-inset-bottom); height: 70px; justify-content: space-around; align-items: center; }
-        .tab-btn { background: none; border: none; color: #888; display: flex; flex-direction: column; align-items: center; font-size: 10px; cursor: pointer; transition: 0.3s; }
-        .tab-btn i { font-style: normal; font-size: 20px; margin-bottom: 4px; }
-        .tab-btn.active { color: var(--primaria); font-weight: bold; }
-        #splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--primaria); display: flex; justify-content: center; align-items: center; z-index: 999; transition: 0.8s ease-in-out; }
-        #splash h1 { color: white; font-size: 32px; }
+        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #fff; }
+        .card { background: var(--lavanda); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e3d9ff; }
+        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; display: block; margin: 10px 0 5px; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-top: 15px; }
+        .item { background: white; padding: 10px; border-radius: 8px; margin-top: 5px; border-left: 4px solid var(--primaria); display: flex; justify-content: space-between; }
+        h2 { color: var(--primaria); margin-top: 0; font-size: 18px; }
     </style>
 </head>
 <body>
-    <div id="splash"><h1>GlicoGabi</h1></div>
-    
-    <iframe id="janela" src="HOME.HTML"></iframe>
+    <h2>Registrar Glicemia</h2>
+    <div class="card">
+        <label>Data</label>
+        <input type="date" id="dataReg" onchange="listarRegistrosDia()">
+        
+        <label>Momento da Medição</label>
+        <select id="momentoReg">
+            <option>Jejum</option>
+            <option>Pós café</option>
+            <option>Antes do almoço</option>
+            <option>Depois do almoço</option>
+            <option>Antes da janta</option>
+            <option>Depois da janta</option>
+            <option>Madrugada</option>
+        </select>
 
-    <div class="nav-tabs">
-        <button class="tab-btn active" onclick="navegar('HOME.HTML', this)"><i>🏠</i><span>Home</span></button>
-        <button class="tab-btn" onclick="navegar('CONSULTAS E EXAMES.html', this)"><i>🩺</i><span>Consultas</span></button>
-        <button class="tab-btn" onclick="navegar('HISTÓRICO.html', this)"><i>📅</i><span>Histórico</span></button>
-        <button class="tab-btn" onclick="navegar('ESTOQUES.html', this)"><i>📦</i><span>Estoque</span></button>
-        <button class="tab-btn" onclick="navegar('AJUSTE.html', this) "><i>⚙️</i><span>Ajustes</span></button>
-        <button class="tab-btn" onclick="navegar('LEMBRETES.HTML', this)"><i>🔔</i><span>Alertas</span></button>
+        <label>Valor (mg/dL)</label>
+        <input type="number" id="valorGlicose" placeholder="000">
+        
+        <button class="btn" onclick="salvar()">Salvar Medição</button>
     </div>
 
+    <div class="card" id="cardDoses">
+        <label>Minhas Doses (Cadastradas em Ajustes)</label>
+        <div id="listaDoses"></div>
+    </div>
+
+    <label>Registros de Hoje</label>
+    <div id="listaDia"></div>
+
     <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => { document.getElementById('splash').style.transform = 'translateY(-100%)'; }, 2000);
-        });
-        function navegar(url, btn) {
-            document.getElementById('janela').src = url;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        document.getElementById('dataReg').valueAsDate = new Date();
+
+        function salvar() {
+            const data = document.getElementById('dataReg').value;
+            const momento = document.getElementById('momentoReg').value;
+            const valor = document.getElementById('valorGlicose').value;
+            if(!valor) return alert("Digite o valor!");
+
+            const dataBr = data.split('-').reverse().join('/');
+            const db = JSON.parse(localStorage.getItem('gabi_glicemias') || '[]');
+            
+            db.push({ data: dataBr, dataISO: data, momento, valor });
+            localStorage.setItem('gabi_glicemias', JSON.stringify(db));
+            
+            document.getElementById('valorGlicose').value = "";
+            alert("Salvo!");
+            listarRegistrosDia();
         }
+
+        function listarRegistrosDia() {
+            const dataSel = document.getElementById('dataReg').value.split('-').reverse().join('/');
+            const db = JSON.parse(localStorage.getItem('gabi_glicemias') || '[]');
+            const list = db.filter(i => i.data === dataSel);
+            
+            document.getElementById('listaDia').innerHTML = list.map(i => `
+                <div class="item"><span>${i.momento}</span><b>${i.valor} mg/dL</b></div>
+            `).join('') || '<small>Nenhum registro.</small>';
+
+            // Carrega Doses da Aba Ajustes
+            const doses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal') || '[]');
+            document.getElementById('listaDoses').innerHTML = doses.map(d => `
+                <div class="item"><span>💉 ${d.nome}</span><b>${d.qtd}</b></div>
+            `).join('') || '<small>Vá em Ajustes para cadastrar suas doses.</small>';
+        }
+
+        listarRegistrosDia();
     </script>
 </body>
 </html>
