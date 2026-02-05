@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GlicoGabi - HOME</title>
+<title>GlicoGabi</title>
+
 <style>
 body{margin:0;font-family:Segoe UI;background:#f2f2f2}
 .container{max-width:420px;margin:auto;background:#fff;min-height:100vh;padding:15px}
-h2{text-align:center}
-input,select,button{
+select,input,button{
     width:100%;
     padding:10px;
     margin-top:8px;
@@ -16,11 +16,19 @@ input,select,button{
     border:1px solid #ccc
 }
 button{background:#7e57ff;color:#fff;font-weight:bold;border:none}
+.card{
+    margin-top:12px;
+    padding:10px;
+    border-left:5px solid #7e57ff;
+    background:#fafafa;
+    border-radius:8px
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="container">
+
 <h2>GlicoGabi</h2>
 
 <select id="momento">
@@ -37,12 +45,18 @@ button{background:#7e57ff;color:#fff;font-weight:bold;border:none}
 <input type="date" id="data">
 <input type="time" id="hora">
 
-<button onclick="salvar()">Salvar</button>
+<button onclick="salvar()">Salvar Registro</button>
+
+<div id="historico"></div>
+
 </div>
 
 <script>
-const STORAGE_GLICO = "glicogabi_medicoes";
-const STORAGE_DOSES = "glicogabi_doses";
+const STORAGE = "glicogabi_medicoes";
+
+function dataSelecionada(){
+    return data.value || new Date().toISOString().split("T")[0];
+}
 
 function salvar(){
     const valor = parseInt(glicemia.value);
@@ -51,17 +65,36 @@ function salvar(){
     const registro = {
         valor,
         momento: momento.value,
-        data: data.value || new Date().toISOString().split("T")[0],
+        data: dataSelecionada(),
         hora: hora.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
     };
 
-    const dados = JSON.parse(localStorage.getItem(STORAGE_GLICO)) || [];
+    const dados = JSON.parse(localStorage.getItem(STORAGE)) || [];
     dados.push(registro);
-    localStorage.setItem(STORAGE_GLICO, JSON.stringify(dados));
+    localStorage.setItem(STORAGE, JSON.stringify(dados));
 
-    alert("Glicemia salva e enviada ao relatório ✅");
+    renderizar();
     glicemia.value="";
 }
+
+function renderizar(){
+    const dia = dataSelecionada();
+    const dados = JSON.parse(localStorage.getItem(STORAGE)) || [];
+    historico.innerHTML="";
+
+    dados.filter(r => r.data === dia)
+         .forEach(r=>{
+            historico.innerHTML += `
+            <div class="card">
+                <b>${r.momento}</b><br>
+                ${r.valor} mg/dL<br>
+                ${r.hora}
+            </div>`;
+         });
+}
+
+data.addEventListener("change", renderizar);
+renderizar();
 </script>
 
 </body>
