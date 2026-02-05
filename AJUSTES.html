@@ -87,7 +87,10 @@
 </div>
 
 <script>
-    const DB_NAME = 'gabi_database';
+    // CHAVES UNIFICADAS COM A HOME
+    const DB_NAME = 'gabi_database'; 
+    const DOSES_KEY = 'gabi_ajustes_vFinal'; 
+
     const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
     function toggleAba(aba) { 
@@ -102,24 +105,25 @@
         const nome = document.getElementById('nomeMed').value; 
         const qtd = document.getElementById('qtdMed').value; 
         if(!nome || !qtd) return alert("Preencha Medicação e Dose!"); 
-        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
         dbDoses.push({nome, qtd}); 
-        localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses)); 
+        localStorage.setItem(DOSES_KEY, JSON.stringify(dbDoses)); 
         document.getElementById('nomeMed').value = "";
         document.getElementById('qtdMed').value = "";
+        alert("Medicação salva! Verifique na Home.");
         toggleAba('doses'); 
     }
 
     function renderDoses() { 
-        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
         document.getElementById('listaMeds').innerHTML = dbDoses.map((m, i) => `<tr><td>${m.nome}</td><td>${m.qtd}</td><td><button onclick="removerDose(${i})" style="border:none; background:none; cursor:pointer;">❌</button></td></tr>`).join(''); 
     }
 
     function removerDose(i) { 
-        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+        let dbDoses = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
         if(confirm("Remover esta medicação?")) {
             dbDoses.splice(i, 1); 
-            localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses)); 
+            localStorage.setItem(DOSES_KEY, JSON.stringify(dbDoses)); 
             renderDoses(); 
         }
     }
@@ -132,6 +136,7 @@
         document.getElementById('txtMes').innerText = mesesNomes[parseInt(mesVal)-1].toUpperCase(); 
         document.getElementById('txtAno').innerText = anoVal; 
 
+        // Agora busca os dados que foram salvos na Home usando a mesma chave gabi_database
         const db = JSON.parse(localStorage.getItem(DB_NAME) || '[]'); 
         const diasNoMes = new Date(anoVal, mesVal, 0).getDate(); 
         let h = ""; 
@@ -141,15 +146,23 @@
             const dataBusca = `${diaPad}/${mesVal}/${anoVal}`;
             const doDia = db.filter(reg => reg.data === dataBusca);
 
-            // Mapeamento das opções da HOME para as colunas do relatório
             const buscar = (momento) => {
+                // Procura o registro pelo nome do momento (igual ao select da Home)
                 const r = doDia.find(reg => reg.momento === momento);
                 return r ? r.valor : "";
             };
 
             h += `<tr>
                 <td>${diaPad}</td>
-                <td>${buscar('Jejum')}</td>               <td>${buscar('Pós café da manhã')}</td>   <td>${buscar('Antes do almoço')}</td>     <td>${buscar('Depois do almoço')}</td>    <td>${buscar('Antes da janta')}</td>      <td>${buscar('Depois da janta')}</td>     <td>${buscar('Madrugada')}</td>           <td></td>                                 </tr>`; 
+                <td>${buscar('Jejum')}</td>
+                <td>${buscar('Pós café')}</td>
+                <td>${buscar('Antes do almoço')}</td>
+                <td>${buscar('Depois do almoço')}</td>
+                <td>${buscar('Antes da janta')}</td>
+                <td>${buscar('Depois da janta')}</td>
+                <td>${buscar('Madrugada')}</td>
+                <td></td>
+            </tr>`; 
         } 
         document.getElementById('corpoRel').innerHTML = h; 
         document.getElementById('modalRelatorio').style.display = "block"; 
