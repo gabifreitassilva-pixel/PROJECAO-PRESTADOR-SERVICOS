@@ -38,7 +38,7 @@
     <div class="header"><h3>Ajustes GlicoGabi</h3></div>
     <div class="tabs">
         <button id="btnDoses" class="tab-btn active" onclick="toggleAba('doses')">Minhas Doses</button>
-        <button id="btnConfig" class="tab-btn" onclick="toggleAba('config')">Configuração</button>
+        <button id="btnConfig" class="tab-btn" onclick="toggleAba('config')">Configurar</button>
     </div>
     <div id="abaConfig" class="hidden">
         <label style="font-size:10px; font-weight:bold; color:var(--primaria); margin-left:20px">CONFIGURAR MEDICAÇÕES</label>
@@ -63,12 +63,12 @@
                     <option value="Março">Março</option><option value="Abril">Abril</option>
                     <option value="Maio">Maio</option><option value="Junho">Junho</option>
                     <option value="Julho">Julho</option><option value="Agosto">Agosto</option>
-                    <option value="Setembro" selected>Setembro</option><option value="Outubro">Outubro</option>
+                    <option value="Setembro">Setembro</option><option value="Outubro">Outubro</option>
                     <option value="Novembro">Novembro</option><option value="Dezembro">Dezembro</option>
                 </select>
-                <input type="text" id="selAno" style="flex: 1;" value="2025">
+                <input type="text" id="selAno" style="flex: 1;" value="2026">
             </div>
-            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar com Dados da Home</button>
+            <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Planilha</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF</button>
             <button class="btn-acao btn-wpp" onclick="enviarWpp()">3. Enviar por WhatsApp</button>
             <button class="btn-acao" onclick="limparHistorico()" style="background:#f44336; margin-top: 10px;">Limpar Medidas da Home</button>
@@ -103,6 +103,9 @@
 </div>
 
 <script>
+    // CHAVE UNIFICADA PARA CONVERSAR COM A HOME
+    const CHAVE_BANCO = "gabi_database_v1"; 
+    
     let db = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
     document.getElementById('wppInput').value = localStorage.getItem('gabi_wpp_ajustes') || "";
 
@@ -151,48 +154,57 @@
     function salvarWpp() { localStorage.setItem('gabi_wpp_ajustes', document.getElementById('wppInput').value); }
 
     function verRelatorio() { 
-        const mes = document.getElementById('selMes').value; 
-        const ano = document.getElementById('selAno').value; 
-        document.getElementById('txtMes').innerText = mes.toUpperCase(); 
-        document.getElementById('txtAno').innerText = ano; 
-
-        // UNIFICADO: Agora lê exatamente a chave da Home
-        const historico = JSON.parse(localStorage.getItem('gabi_historico_glicemias') || '[]');
+        const mesSel = document.getElementById('selMes').value; 
+        const anoSel = document.getElementById('selAno').value; 
+        const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         
-        let h = ""; 
-        for(let i=1; i<=31; i++) { 
-            const diaDados = historico.filter(d => d.dia == i);
-            
-            // Busca aprimorada para bater com os nomes do select da HOME
-            const buscar = (m) => diaDados.find(d => d.momento.toLowerCase() === m.toLowerCase())?.valor || "";
+        // LÊ O BANCO DA HOME
+        const banco = JSON.parse(localStorage.getItem(CHAVE_BANCO) || "[]");
+        
+        let html = ""; 
+        for(let dia=1; dia<=31; dia++) { 
+            // Filtra medições deste dia específico para montar a linha da tabela
+            const dadosDoDia = banco.filter(item => {
+                const dataObj = new Date(item.data + "T00:00:00");
+                return dataObj.getDate() === dia && 
+                       mesesNomes[dataObj.getMonth()] === mesSel && 
+                       dataObj.getFullYear().toString() === anoSel;
+            });
 
-            h += `<tr>
-                <td>${i}</td>
-                <td>${buscar('Jejum')}</td>
-                <td>${buscar('Pós café')}</td>
-                <td>${buscar('Antes do almoço')}</td>
-                <td>${buscar('Depois do almoço')}</td>
-                <td>${buscar('Antes da janta')}</td>
-                <td>${buscar('Depois da janta')}</td>
-                <td>${buscar('Antes de Dormir')}</td>
+            // Função para pegar o valor baseado no nome exato que está no select da HOME
+            const getVal = (m) => {
+                const r = dadosDoDia.find(d => d.momento.toLowerCase().includes(m.toLowerCase()));
+                return r ? r.valor : "";
+            };
+
+            html += `<tr>
+                <td>${dia}</td>
+                <td>${getVal('Jejum')}</td>
+                <td>${getVal('Pós café')}</td>
+                <td>${getVal('Antes do almoço')}</td>
+                <td>${getVal('Depois do almoço')}</td>
+                <td>${getVal('Antes da janta')}</td>
+                <td>${getVal('Depois da janta')}</td>
+                <td>${getVal('Dormir')}</td>
                 <td></td>
             </tr>`; 
         } 
-        document.getElementById('corpoRel').innerHTML = h; 
+        document.getElementById('txtMes').innerText = mesSel.toUpperCase(); 
+        document.getElementById('txtAno').innerText = anoSel; 
+        document.getElementById('corpoRel').innerHTML = html; 
         document.getElementById('modalRelatorio').style.display = "block"; 
     }
 
     function fecharRelatorio() { document.getElementById('modalRelatorio').style.display = "none"; }
 
     function exportarPDF() { 
-        verRelatorio(); 
         const element = document.getElementById('areaRel'); 
         const opt = { 
             margin: [2,2,2,2], 
             filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}.pdf`, 
             jsPDF: { orientation: 'landscape' } 
         }; 
-        html2pdf().from(element).set(opt).save().then(() => { fecharRelatorio(); }); 
+        html2pdf().from(element).set(opt).save(); 
     }
 
     function enviarWpp() { 
@@ -204,10 +216,9 @@
     }
 
     function limparHistorico() {
-        if(confirm("Deseja apagar todas as medidas da Home? Esta ação não pode ser desfeita.")) {
-            // UNIFICADO: Agora apaga a chave correta
-            localStorage.removeItem('gabi_historico_glicemias');
-            alert("Histórico limpo!");
+        if(confirm("Deseja apagar todas as medidas da Home?")) {
+            localStorage.removeItem(CHAVE_BANCO);
+            alert("Histórico da Home limpo!");
         }
     }
 
