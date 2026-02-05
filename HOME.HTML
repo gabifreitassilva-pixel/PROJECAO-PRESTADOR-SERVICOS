@@ -2,251 +2,67 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>GlicoGabi</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlicoGabi - HOME</title>
 <style>
-:root{
-    --primaria:#7e57ff;
-    --laranja:#ff9800;
-    --verde:#4caf50;
-    --vermelho:#f44336;
-}
-body{
-    font-family:'Segoe UI',sans-serif;
-    background:#f0f0f0;
-    margin:0;
-    padding:0;
-    display:flex;
-    justify-content:center;
-}
-
-.outer-frame{
-    border:8px solid var(--primaria);
-    border-radius:35px;
-    background:var(--primaria);
+body{margin:0;font-family:Segoe UI;background:#f2f2f2}
+.container{max-width:420px;margin:auto;background:#fff;min-height:100vh;padding:15px}
+h2{text-align:center}
+input,select,button{
     width:100%;
-    max-width:100%;
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-}
-
-.container{
-    background:white;
-    flex:1;
-    border-radius:25px;
-    margin:5px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-}
-
-.header{
-    background:var(--primaria);
-    color:white;
-    padding:30px 20px;
-    text-align:center;
-}
-.header h1{margin:0;font-size:32px}
-.header p{margin-top:8px;font-size:15px}
-
-.doses-container{
-    display:flex;
-    gap:10px;
-    padding:10px 15px;
-    overflow-x: auto;
-}
-.dose-box{
-    border:1px solid #eee;
-    border-radius:10px;
-    padding:8px;
-    min-width: 80px;
-    flex:1;
-    font-size:11px;
-    text-align:center;
-    background: #fdfbff;
-}
-
-.input-area{
-    background:#f4f0ff;
-    margin:0 15px 15px;
-    padding:15px;
-    border-radius:20px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-select,input{
     padding:10px;
-    border-radius:10px;
-    border:1px solid #ddd;
+    margin-top:8px;
+    border-radius:8px;
+    border:1px solid #ccc
 }
-.retro-row{display:flex;gap:8px}
-.retro-row input{flex:1;font-size:11px}
-button{
-    background:var(--primaria);
-    color:white;
-    border:none;
-    padding:12px;
-    border-radius:12px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.history-list{padding:0 15px 20px}
-
-.group-card{
-    background:white;
-    border-radius:15px;
-    margin-bottom:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.05);
-    border-left:5px solid var(--laranja);
-}
-.group-header{
-    padding:8px 15px;
-    font-weight:bold;
-    background:#fafafa;
-    display: flex;
-    justify-content: space-between;
-}
-.main-entry{padding:10px 15px}
-.main-val{font-size:24px;font-weight:bold}
-.main-feedback{font-size:13px;font-weight:bold}
+button{background:#7e57ff;color:#fff;font-weight:bold;border:none}
 </style>
 </head>
-
 <body>
 
-<div class="outer-frame">
 <div class="container">
+<h2>GlicoGabi</h2>
 
-<div class="header">
-<h1>GlicoGabi</h1>
-<p>Olá, Gabriela! Vamos cuidar da saúde?</p>
-</div>
-
-<div class="doses-container" id="dosesDinamicas"></div>
-
-<div class="input-area">
 <select id="momento">
-<option value="Jejum">🌅 Jejum</option>
-<option value="Pós café">☕ Pós café</option>
-<option value="Antes do almoço">🥗 Antes do almoço</option>
-<option value="Depois do almoço">🍛 Depois do almoço</option>
-<option value="Antes da janta">🍽️ Antes da janta</option>
-<option value="Depois da janta">🍕 Depois da janta</option>
-<option value="Madrugada">🌙 Madrugada</option>
+<option>Jejum</option>
+<option>Pós café</option>
+<option>Antes do almoço</option>
+<option>Depois do almoço</option>
+<option>Antes da janta</option>
+<option>Depois da janta</option>
+<option>Madrugada</option>
 </select>
 
-<input type="number" id="glicemia" placeholder="mg/dL">
+<input type="number" id="glicemia" placeholder="Glicemia mg/dL">
+<input type="date" id="data">
+<input type="time" id="hora">
 
-<div class="retro-row">
-<input type="date" id="data_retro">
-<input type="time" id="hora_retro">
-</div>
-
-<button onclick="salvar()">Salvar Registro</button>
-</div>
-
-<div id="historico" class="history-list"></div>
-
-</div>
+<button onclick="salvar()">Salvar</button>
 </div>
 
 <script>
-const ALVO=130;
-const FSI=72;
-const STORAGE_KEY = 'gabi_database'; // Integra com o Relatório
-const DOSES_KEY = 'gabi_ajustes_vFinal'; // Integra com as Doses
-
-function carregarDoses() {
-    const container = document.getElementById('dosesDinamicas');
-    const dosesSalvas = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
-    if (dosesSalvas.length === 0) {
-        container.innerHTML = '<div class="dose-box">Sem doses</div>';
-        return;
-    }
-    container.innerHTML = dosesSalvas.map(d => `<div class="dose-box">${d.nome} <b>${d.qtd}</b></div>`).join('');
-}
+const STORAGE_GLICO = "glicogabi_medicoes";
+const STORAGE_DOSES = "glicogabi_doses";
 
 function salvar(){
-    const valor=parseInt(document.getElementById('glicemia').value);
-    const dataInput = document.getElementById('data_retro').value;
-    const horaInput = document.getElementById('hora_retro').value;
-    
-    if(!valor) return alert("Digite o valor!");
-
-    // Formata a data para o padrão brasileiro (DD/MM/AAAA)
-    const dataFormatada = dataInput ? dataInput.split("-").reverse().join("/") : new Date().toLocaleDateString("pt-BR");
-    const horaFormatada = horaInput || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    const valor = parseInt(glicemia.value);
+    if(!valor) return;
 
     const registro = {
-        id: Date.now(),
-        momento: document.getElementById('momento').value,
-        valor: valor,
-        data: dataFormatada,
-        hora: horaFormatada,
-        // Cria um timestamp para ordenação correta nos cards
-        timestamp: dataInput ? new Date(dataInput + "T" + (horaInput || "00:00")).getTime() : Date.now()
+        valor,
+        momento: momento.value,
+        data: data.value || new Date().toISOString().split("T")[0],
+        hora: hora.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
     };
 
-    const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const dados = JSON.parse(localStorage.getItem(STORAGE_GLICO)) || [];
     dados.push(registro);
-    
-    // Ordena: mais recentes primeiro
-    dados.sort((a, b) => b.timestamp - a.timestamp);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+    localStorage.setItem(STORAGE_GLICO, JSON.stringify(dados));
 
-    document.getElementById('glicemia').value = "";
-    renderizar();
+    alert("Glicemia salva e enviada ao relatório ✅");
+    glicemia.value="";
 }
-
-function excluir(id) {
-    if(confirm("Excluir registro?")) {
-        let dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        dados = dados.filter(r => r.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-        renderizar();
-    }
-}
-
-function renderizar(){
-    const lista = document.getElementById('historico');
-    lista.innerHTML = "";
-    const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    
-    dados.forEach(r => {
-        let feedback="", classe="";
-        if(r.valor < 70) { feedback="Hipoglicemia! Consumir açúcar."; classe="hipo"; }
-        else if(r.valor <= 130) { feedback="Excelente!"; classe="excelente"; }
-        else if(r.valor <= 180) { feedback="Um pouco alto. Monitore."; classe="alerta"; }
-        else { 
-            feedback = `Sugestão: +${Math.ceil((r.valor-ALVO)/FSI)}un Regular.`; 
-            classe="hiper"; 
-        }
-
-        const card = document.createElement("div");
-        card.className = "group-card";
-        card.innerHTML = `
-            <div class="group-header">
-                <span>${r.momento}</span>
-                <span onclick="excluir(${r.id})" style="cursor:pointer; opacity:0.3">🗑️</span>
-            </div>
-            <div class="main-entry">
-                <div style="font-size:10px; color:#666">${r.data} - ${r.hora}</div>
-                <div class="main-val">${r.valor} mg/dL</div>
-                <div class="main-feedback ${classe}">${feedback}</div>
-            </div>`;
-        lista.appendChild(card);
-    });
-}
-
-window.onload = function() {
-    carregarDoses();
-    renderizar();
-};
 </script>
+
 </body>
 </html>
