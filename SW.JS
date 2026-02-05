@@ -4,7 +4,7 @@ const ASSETS = [
   'HOME.HTML',
   'CONSULTA E EXAMES.HTML',
   'HISTÓRICO.HTML',
-  'ESTOQUES.HTML',
+  'ESTOQUE.HTML',
   'AJUSTES.HTML',
   'LEMBRETES.HTML',
   'ÍCONE.PNG',
@@ -36,3 +36,4 @@ self.addEventListener('activate', (e) => {
     })
   );
 });
+
