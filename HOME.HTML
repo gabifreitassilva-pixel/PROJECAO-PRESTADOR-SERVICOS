@@ -153,6 +153,7 @@ button{
 <option>Depois do almoço</option>
 <option>Antes da janta</option>
 <option>Depois da janta</option>
+<option>Antes de Dormir</option>
 <option>Madrugada</option>
 </select>
 
@@ -172,34 +173,29 @@ button{
 </div>
 
 <script>
-const STORAGE_GLICO="glicogabi_medicoes";
-const STORAGE_DOSES="glicogabi_doses";
+// UNIFICADO: Agora usa a mesma chave que a aba Ajustes espera
+const STORAGE_GLICO="gabi_historico_glicemias"; 
 const ALVO=130;
 const FSI=72;
 
 let ultimaPorMomento={};
 
 function dataAtiva(){
-    return data_retro.value || new Date().toISOString().split("T")[0];
-}
-
-function carregarDoses(){
-    const d=JSON.parse(localStorage.getItem(STORAGE_DOSES));
-    if(!d) return;
-    doseNPH.innerText=d.nph+"un";
-    doseRegular.innerText=d.regular+"un";
-    doseMetf.innerText=d.metformina+"mg";
+    return document.getElementById('data_retro').value || new Date().toISOString().split("T")[0];
 }
 
 function salvar(){
-    const valor=parseInt(glicemia.value);
+    const valor=parseInt(document.getElementById('glicemia').value);
     if(!valor) return;
 
+    // Adicionado o campo 'dia' para o relatório em AJUSTES.HTML funcionar
+    const dataRef = dataAtiva();
     const registro={
-        momento:momento.value,
-        valor,
-        data:dataAtiva(),
-        hora:hora_retro.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+        momento: document.getElementById('momento').value,
+        valor: valor,
+        dia: parseInt(dataRef.split("-")[2]), 
+        data: dataRef,
+        hora: document.getElementById('hora_retro').value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
     };
 
     const dados=JSON.parse(localStorage.getItem(STORAGE_GLICO))||[];
@@ -207,7 +203,7 @@ function salvar(){
     localStorage.setItem(STORAGE_GLICO,JSON.stringify(dados));
 
     renderizar();
-    glicemia.value="";
+    document.getElementById('glicemia').value="";
 }
 
 function analisar(valor,subiu){
@@ -221,7 +217,8 @@ function analisar(valor,subiu){
 }
 
 function renderizar(){
-    historico.innerHTML="";
+    const histDiv = document.getElementById('historico');
+    histDiv.innerHTML="";
     ultimaPorMomento={};
 
     const dia=dataAtiva();
@@ -247,7 +244,7 @@ function renderizar(){
                 <div class="main-feedback ${classe}">${msg}</div>
             </div>
             <div class="subs"></div>`;
-            historico.appendChild(card);
+            histDiv.appendChild(card);
         }else{
             const sub=document.createElement("div");
             sub.className="sub-entry";
@@ -260,8 +257,7 @@ function renderizar(){
     });
 }
 
-data_retro.addEventListener("change",renderizar);
-carregarDoses();
+document.getElementById('data_retro').addEventListener("change",renderizar);
 renderizar();
 </script>
 
