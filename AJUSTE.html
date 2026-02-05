@@ -87,7 +87,6 @@
 </div>
 
 <script>
-    // Banco de dados das doses configuradas
     let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
     const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
@@ -122,32 +121,24 @@
         }
     }
 
-    // LÓGICA DE INTEGRAÇÃO COM A HOME
     function verRelatorio() { 
-        const mesVal = document.getElementById('selMes').value; // Ex: "09"
-        const anoVal = document.getElementById('selAno').value; // Ex: "2024"
-        
-        if(!mesVal || !anoVal) return alert("Selecione o Mês e digite o Ano.");
-        
+        const mesVal = document.getElementById('selMes').value; 
+        const anoVal = document.getElementById('selAno').value;
+        if(!mesVal || !anoVal) return alert("Selecione Mês e Ano!");
         document.getElementById('txtMes').innerText = mesesNomes[parseInt(mesVal)-1].toUpperCase(); 
         document.getElementById('txtAno').innerText = anoVal; 
 
-        // Puxa os dados salvos pela aba HOME.html
-        const historicoGlicemias = JSON.parse(localStorage.getItem('gabi_glicemias') || '[]'); 
-        
+        const db = JSON.parse(localStorage.getItem('gabi_database') || '[]'); 
         const diasNoMes = new Date(anoVal, mesVal, 0).getDate(); 
         let htmlCorpo = ""; 
 
         for(let i=1; i<=diasNoMes; i++) { 
             const diaPadrao = i.toString().padStart(2, '0');
-            const dataBusca = `${diaPadrao}/${mesVal}/${anoVal}`; // Formato DD/MM/YYYY usado na Home
-            
-            // Filtra as medições daquele dia específico
-            const mediçõesDoDia = historicoGlicemias.filter(d => d.data === dataBusca);
+            const dataBusca = `${diaPadrao}/${mesVal}/${anoVal}`;
+            const mediçõesDoDia = db.filter(d => d.data === dataBusca);
 
-            // Função auxiliar para buscar o valor por momento
             const buscarValor = (momento) => {
-                const registro = mediçõesDoDia.find(d => d.momento.toLowerCase().trim() === momento.toLowerCase().trim());
+                const registro = mediçõesDoDia.find(d => d.momento === momento);
                 return registro ? registro.valor : "";
             };
 
@@ -163,20 +154,17 @@
                 <td></td>
             </tr>`; 
         } 
-        
         document.getElementById('corpoRel').innerHTML = htmlCorpo; 
         document.getElementById('modalRelatorio').style.display = "block"; 
     }
 
     function exportarPDF() { 
-        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano primeiro.");
+        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano!");
         verRelatorio();
         const element = document.getElementById('areaRel');
         const opt = { 
             margin: [5, 5, 5, 5], 
             filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}_${document.getElementById('selAno').value}.pdf`, 
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }; 
         html2pdf().from(element).set(opt).save(); 
@@ -188,7 +176,6 @@
         const texto = `Segue meu relatório GlicoGabi referente a ${document.getElementById('selMes').value}/${document.getElementById('selAno').value}.`;
         window.open(`https://wa.me/55${num}?text=${encodeURIComponent(texto)}`); 
     }
-
     renderDoses();
 </script>
 </body>
