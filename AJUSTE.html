@@ -60,7 +60,7 @@
                     <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
                     <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
-                <input type="number" id="selAno" style="flex: 1;" placeholder="Ano (Ex: 2024)">
+                <input type="number" id="selAno" style="flex: 1;" placeholder="Ano (Ex: 2026)">
             </div>
             <button class="btn-acao" onclick="verRelatorio()">1. Visualizar Relatório</button>
             <button class="btn-acao btn-pdf" onclick="exportarPDF()">2. Baixar PDF Completo</button>
@@ -77,7 +77,7 @@
         <table class="tab-rel">
             <thead>
                 <tr>
-                    <th rowspan="2" style="width:12mm">Dia</th><th colspan="2">Café da Manhã</th><th colspan="2">Almoço</th><th colspan="2">Jantar</th><th rowspan="2">Dormir/Madrugada</th><th rowspan="2">Anotações</th>
+                    <th rowspan="2" style="width:12mm">Dia</th><th colspan="2">Café da Manhã</th><th colspan="2">Almoço</th><th colspan="2">Jantar</th><th rowspan="2">Dormir / Madrugada</th><th rowspan="2">Anotações</th>
                 </tr>
                 <tr><th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th><th>Antes</th><th>Depois</th></tr>
             </thead>
@@ -87,7 +87,8 @@
 </div>
 
 <script>
-    let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+    // Usa a mesma chave de banco de dados configurada na HOME corrigida
+    const DB_NAME = 'gabi_database';
     const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
     function toggleAba(aba) { 
@@ -101,7 +102,8 @@
     function salvarDose() { 
         const nome = document.getElementById('nomeMed').value; 
         const qtd = document.getElementById('qtdMed').value; 
-        if(!nome || !qtd) return alert("Preencha!"); 
+        if(!nome || !qtd) return alert("Preencha Medicação e Dose!"); 
+        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
         dbDoses.push({nome, qtd}); 
         localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses)); 
         document.getElementById('nomeMed').value = "";
@@ -110,10 +112,12 @@
     }
 
     function renderDoses() { 
-        document.getElementById('listaMeds').innerHTML = dbDoses.map((m, i) => `<tr><td>${m.nome}</td><td>${m.qtd}</td><td><button onclick="removerDose(${i})">❌</button></td></tr>`).join(''); 
+        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
+        document.getElementById('listaMeds').innerHTML = dbDoses.map((m, i) => `<tr><td>${m.nome}</td><td>${m.qtd}</td><td><button onclick="removerDose(${i})" style="border:none; background:none; cursor:pointer;">❌</button></td></tr>`).join(''); 
     }
 
     function removerDose(i) { 
+        let dbDoses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal')) || [];
         if(confirm("Remover esta medicação?")) {
             dbDoses.splice(i, 1); 
             localStorage.setItem('gabi_ajustes_vFinal', JSON.stringify(dbDoses)); 
@@ -124,47 +128,50 @@
     function verRelatorio() { 
         const mesVal = document.getElementById('selMes').value; 
         const anoVal = document.getElementById('selAno').value;
-        if(!mesVal || !anoVal) return alert("Selecione Mês e Ano!");
+        if(!mesVal || !anoVal) return alert("Por favor, selecione o Mês e digite o Ano.");
+        
         document.getElementById('txtMes').innerText = mesesNomes[parseInt(mesVal)-1].toUpperCase(); 
         document.getElementById('txtAno').innerText = anoVal; 
 
-        const db = JSON.parse(localStorage.getItem('gabi_database') || '[]'); 
+        const db = JSON.parse(localStorage.getItem(DB_NAME) || '[]'); 
         const diasNoMes = new Date(anoVal, mesVal, 0).getDate(); 
-        let htmlCorpo = ""; 
+        let h = ""; 
 
         for(let i=1; i<=diasNoMes; i++) { 
-            const diaPadrao = i.toString().padStart(2, '0');
-            const dataBusca = `${diaPadrao}/${mesVal}/${anoVal}`;
-            const mediçõesDoDia = db.filter(d => d.data === dataBusca);
+            const diaPad = i.toString().padStart(2, '0');
+            const dataBusca = `${diaPad}/${mesVal}/${anoVal}`;
+            const doDia = db.filter(reg => reg.data === dataBusca);
 
-            const buscarValor = (momento) => {
-                const registro = mediçõesDoDia.find(d => d.momento === momento);
-                return registro ? registro.valor : "";
+            const buscar = (momento) => {
+                const r = doDia.find(reg => reg.momento === momento);
+                return r ? r.valor : "";
             };
 
-            htmlCorpo += `<tr>
-                <td>${diaPadrao}</td>
-                <td>${buscarValor('Jejum')}</td>
-                <td>${buscarValor('Pós café')}</td>
-                <td>${buscarValor('Antes do almoço')}</td>
-                <td>${buscarValor('Depois do almoço')}</td>
-                <td>${buscarValor('Antes da janta')}</td>
-                <td>${buscarValor('Depois da janta')}</td>
-                <td>${buscarValor('Madrugada')}</td>
+            h += `<tr>
+                <td>${diaPad}</td>
+                <td>${buscar('Jejum')}</td>
+                <td>${buscar('Pós café')}</td>
+                <td>${buscar('Antes do almoço')}</td>
+                <td>${buscar('Depois do almoço')}</td>
+                <td>${buscar('Antes da janta')}</td>
+                <td>${buscar('Depois da janta')}</td>
+                <td>${buscar('Madrugada')}</td>
                 <td></td>
             </tr>`; 
         } 
-        document.getElementById('corpoRel').innerHTML = htmlCorpo; 
+        document.getElementById('corpoRel').innerHTML = h; 
         document.getElementById('modalRelatorio').style.display = "block"; 
     }
 
     function exportarPDF() { 
-        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano!");
+        if(!document.getElementById('selMes').value || !document.getElementById('selAno').value) return alert("Selecione Mês e Ano antes.");
         verRelatorio();
         const element = document.getElementById('areaRel');
         const opt = { 
             margin: [5, 5, 5, 5], 
             filename: `Relatorio_Glicemia_${document.getElementById('selMes').value}_${document.getElementById('selAno').value}.pdf`, 
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         }; 
         html2pdf().from(element).set(opt).save(); 
@@ -173,10 +180,11 @@
     function enviarWpp() { 
         const num = document.getElementById('wppInput').value; 
         if(!num) return alert("Informe o número!");
-        const texto = `Segue meu relatório GlicoGabi referente a ${document.getElementById('selMes').value}/${document.getElementById('selAno').value}.`;
-        window.open(`https://wa.me/55${num}?text=${encodeURIComponent(texto)}`); 
+        const msg = `Segue meu relatório GlicoGabi mensal referente a ${document.getElementById('selMes').value}/${document.getElementById('selAno').value}.`;
+        window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`); 
     }
-    renderDoses();
+
+    window.onload = renderDoses;
 </script>
 </body>
 </html>
