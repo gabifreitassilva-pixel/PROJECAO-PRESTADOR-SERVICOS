@@ -3,83 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Registro de Glicemia</title>
+    <title>GlicoGabi - Home</title>
     <style>
-        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #fff; }
-        .card { background: var(--lavanda); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e3d9ff; }
-        label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; display: block; margin: 10px 0 5px; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn-salvar { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .registro-item { background: white; padding: 12px; border-radius: 10px; margin-top: 8px; border-left: 5px solid var(--primaria); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; --perigo: #ff4444; --sucesso: #4caf50; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfbff; margin: 0; padding: 15px; }
+        .card-input { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        select, input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+        .btn-salvar { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        /* Estilo dos Cards de Histórico conforme a imagem fornecida */
+        .historico-container { display: flex; flex-direction: column; gap: 10px; }
+        .card-log { background: white; border-radius: 15px; padding: 15px; border-left: 6px solid var(--perigo); position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card-log.bom { border-left-color: var(--sucesso); }
+        .log-header { font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; }
+        .log-time { font-size: 11px; color: #888; margin: 5px 0; }
+        .log-value { font-size: 24px; font-weight: bold; color: #ff9800; }
+        .log-value span { font-size: 12px; font-weight: normal; }
+        .log-msg { font-size: 12px; color: var(--perigo); font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <label>Data</label>
-        <input type="date" id="dataReg" onchange="atualizarHistorico()">
-        
-        <label>Momento da Medição</label>
-        <select id="momentoReg">
-            <option value="Jejum">Jejum</option>
-            <option value="Pós café">Pós café</option>
-            <option value="Antes do almoço">Antes do almoço</option>
-            <option value="Depois do almoço">Depois do almoço</option>
-            <option value="Antes da janta">Antes da janta</option>
-            <option value="Depois da janta">Depois da janta</option>
-            <option value="Madrugada">Madrugada</option>
+    <div class="card-input">
+        <select id="momento">
+            <option value="Jejum">🌅 Jejum</option>
+            <option value="Pós café da manhã">☕ Pós café da manhã</option>
+            <option value="Antes do almoço">🥗 Antes do almoço</option>
+            <option value="Depois do almoço">🥘 Depois do almoço</option>
+            <option value="Antes da janta">🍽️ Antes da janta</option>
+            <option value="Depois da janta">🍕 Depois da janta</option>
+            <option value="Madrugada">🌙 Madrugada</option>
         </select>
-
-        <label>Valor (mg/dL)</label>
-        <input type="number" id="valorGlicose" placeholder="mg/dL">
-        
-        <button class="btn-salvar" onclick="salvarGlicemia()">Salvar Registro</button>
+        <input type="number" id="valor" placeholder="mg/dL">
+        <input type="date" id="data">
+        <input type="time" id="hora">
+        <button class="btn-salvar" onclick="salvar()">Salvar Registro</button>
     </div>
 
-    <label>Histórico do Dia Selecionado</label>
-    <div id="listaHistorico"></div>
+    <div id="listaHistorico" class="historico-container"></div>
 
     <script>
-        // Define a data atual no input ao carregar
-        document.getElementById('dataReg').valueAsDate = new Date();
+        // Inicializa data e hora atual
+        const agora = new Date();
+        document.getElementById('data').valueAsDate = agora;
+        document.getElementById('hora').value = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
 
-        function salvarGlicemia() {
-            const data = document.getElementById('dataReg').value;
-            const momento = document.getElementById('momentoReg').value;
-            const valor = document.getElementById('valorGlicose').value;
+        function salvar() {
+            const momento = document.getElementById('momento').value;
+            const valor = document.getElementById('valor').value;
+            const data = document.getElementById('data').value;
+            const hora = document.getElementById('hora').value;
 
-            if(!valor || !data) return alert("Preencha todos os campos!");
+            if(!valor || !data) return alert("Preencha os campos!");
 
-            // Formata a data para DD/MM/YYYY para sincronizar com o relatório
             const dataBr = data.split('-').reverse().join('/');
-            let db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
+            const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
             
-            db.push({ data: dataBr, momento: momento, valor: valor, dataISO: data });
+            db.unshift({ data: dataBr, hora, momento, valor: parseInt(valor) });
             localStorage.setItem('gabi_database', JSON.stringify(db));
             
-            document.getElementById('valorGlicose').value = "";
-            alert("Salvo!");
-            atualizarHistorico();
+            document.getElementById('valor').value = "";
+            render();
         }
 
-        function atualizarHistorico() {
-            const dataInput = document.getElementById('dataReg').value;
-            if(!dataInput) return;
-            const dataBusca = dataInput.split('-').reverse().join('/');
-            
+        function render() {
             const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
-            const filtrados = db.filter(i => i.data === dataBusca);
-            
             const lista = document.getElementById('listaHistorico');
-            lista.innerHTML = filtrados.length ? 
-                filtrados.map(i => `
-                    <div class="registro-item">
-                        <span><b>${i.momento}</b></span>
-                        <span>${i.valor} mg/dL</span>
-                    </div>`).join('') : '<p>Sem registros para este dia.</p>';
+            
+            lista.innerHTML = db.map(i => {
+                const isAlto = i.valor > 180;
+                return `
+                <div class="card-log ${isAlto ? '' : 'bom'}">
+                    <div class="log-header">${i.momento}</div>
+                    <div class="log-time">${i.data} - ${i.hora}</div>
+                    <div class="log-value">${i.valor} <span>mg/dL</span></div>
+                    <div class="log-msg">${isAlto ? 'Valor elevado. Sugestão: +2un Regular e água.' : 'Valor excelente! Continue cuidando de você.'}</div>
+                </div>`;
+            }).join('');
         }
-
-        atualizarHistorico();
+        render();
     </script>
 </body>
 </html>
