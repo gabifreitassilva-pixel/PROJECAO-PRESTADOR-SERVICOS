@@ -1,86 +1,293 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlicoGabi - Home</title>
-    <style>
-        :root { --primaria: #7e57ff; --lavanda: #f4f0ff; --perigo: #ff4444; --sucesso: #4caf50; }
-        body { font-family: 'Segoe UI', sans-serif; background: #fdfbff; margin: 0; padding: 15px; }
-        .card-input { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        select, input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
-        .btn-salvar { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
-        
-        /* Estilo dos Cards de Histórico conforme a imagem fornecida */
-        .historico-container { display: flex; flex-direction: column; gap: 10px; }
-        .card-log { background: white; border-radius: 15px; padding: 15px; border-left: 6px solid var(--perigo); position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .card-log.bom { border-left-color: var(--sucesso); }
-        .log-header { font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; }
-        .log-time { font-size: 11px; color: #888; margin: 5px 0; }
-        .log-value { font-size: 24px; font-weight: bold; color: #ff9800; }
-        .log-value span { font-size: 12px; font-weight: normal; }
-        .log-msg { font-size: 12px; color: var(--perigo); font-weight: bold; margin-top: 5px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GlicoGabi</title>
+
+<style>
+:root{
+    --primaria:#7e57ff;
+    --laranja:#ff9800;
+    --verde:#4caf50;
+    --vermelho:#f44336;
+}
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f0f0f0;
+    margin:0;
+    padding:0;
+    display:flex;
+    justify-content:center;
+}
+
+.outer-frame{
+    border:8px solid var(--primaria);
+    border-radius:35px;
+    background:var(--primaria);
+    width:100%;
+    max-width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.container{
+    background:white;
+    flex:1;
+    border-radius:25px;
+    margin:5px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+.header{
+    background:var(--primaria);
+    color:white;
+    padding:30px 20px;
+    text-align:center;
+}
+.header h1{margin:0;font-size:32px}
+.header p{margin-top:8px;font-size:15px}
+
+.doses-container{
+    display:flex;
+    gap:10px;
+    padding:10px 15px;
+    overflow-x: auto; /* Permite rolar se houver muitas doses */
+}
+.dose-box{
+    border:1px solid #eee;
+    border-radius:10px;
+    padding:8px;
+    min-width: 80px;
+    flex:1;
+    font-size:11px;
+    text-align:center;
+    background: #fdfbff;
+}
+
+.input-area{
+    background:#f4f0ff;
+    margin:0 15px 15px;
+    padding:15px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+select,input{
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ddd;
+}
+.retro-row{display:flex;gap:8px}
+.retro-row input{flex:1;font-size:11px}
+button{
+    background:var(--primaria);
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.history-list{padding:0 15px 20px}
+
+.group-card{
+    background:white;
+    border-radius:15px;
+    margin-bottom:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    border-left:5px solid var(--laranja);
+}
+.group-header{
+    padding:8px 15px;
+    font-weight:bold;
+    background:#fafafa;
+}
+.main-entry{padding:10px 15px}
+.main-val{font-size:24px;font-weight:bold}
+.main-feedback{font-size:13px;font-weight:bold}
+.sub-entry{
+    padding:5px 15px;
+    border-top:1px dashed #eee;
+}
+.sub-time-row{font-size:11px;color:#666}
+
+.hipo{color:var(--vermelho)}
+.excelente{color:var(--verde)}
+.alerta{color:var(--laranja)}
+.hiper{color:var(--vermelho)}
+</style>
 </head>
+
 <body>
-    <div class="card-input">
-        <select id="momento">
-            <option value="Jejum">🌅 Jejum</option>
-            <option value="Pós café da manhã">☕ Pós café da manhã</option>
-            <option value="Antes do almoço">🥗 Antes do almoço</option>
-            <option value="Depois do almoço">🥘 Depois do almoço</option>
-            <option value="Antes da janta">🍽️ Antes da janta</option>
-            <option value="Depois da janta">🍕 Depois da janta</option>
-            <option value="Madrugada">🌙 Madrugada</option>
-        </select>
-        <input type="number" id="valor" placeholder="mg/dL">
-        <input type="date" id="data">
-        <input type="time" id="hora">
-        <button class="btn-salvar" onclick="salvar()">Salvar Registro</button>
+
+<div class="outer-frame">
+<div class="container">
+
+<div class="header">
+<h1>GlicoGabi</h1>
+<p>Olá, Gabriela! Vamos cuidar da saúde?</p>
+</div>
+
+<div class="doses-container" id="dosesDinamicas">
     </div>
 
-    <div id="listaHistorico" class="historico-container"></div>
+<div class="input-area">
+<select id="momento">
+<option value="Jejum">🌅 Jejum</option>
+<option value="Pós café">☕ Pós café</option>
+<option value="Antes do almoço">🥗 Antes do almoço</option>
+<option value="Depois do almoço">🍛 Depois do almoço</option>
+<option value="Antes da janta">🍽️ Antes da janta</option>
+<option value="Depois da janta">🍕 Depois da janta</option>
+<option value="Madrugada">🌙 Madrugada</option>
+</select>
 
-    <script>
-        // Inicializa data e hora atual
-        const agora = new Date();
-        document.getElementById('data').valueAsDate = agora;
-        document.getElementById('hora').value = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
+<input type="number" id="glicemia" placeholder="mg/dL">
 
-        function salvar() {
-            const momento = document.getElementById('momento').value;
-            const valor = document.getElementById('valor').value;
-            const data = document.getElementById('data').value;
-            const hora = document.getElementById('hora').value;
+<div class="retro-row">
+<input type="date" id="data_retro">
+<input type="time" id="hora_retro">
+</div>
 
-            if(!valor || !data) return alert("Preencha os campos!");
+<button onclick="salvar()">Salvar Registro</button>
+</div>
 
-            const dataBr = data.split('-').reverse().join('/');
-            const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
-            
-            db.unshift({ data: dataBr, hora, momento, valor: parseInt(valor) });
-            localStorage.setItem('gabi_database', JSON.stringify(db));
-            
-            document.getElementById('valor').value = "";
-            render();
-        }
+<div id="historico" class="history-list"></div>
 
-        function render() {
-            const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
-            const lista = document.getElementById('listaHistorico');
-            
-            lista.innerHTML = db.map(i => {
-                const isAlto = i.valor > 180;
-                return `
-                <div class="card-log ${isAlto ? '' : 'bom'}">
-                    <div class="log-header">${i.momento}</div>
-                    <div class="log-time">${i.data} - ${i.hora}</div>
-                    <div class="log-value">${i.valor} <span>mg/dL</span></div>
-                    <div class="log-msg">${isAlto ? 'Valor elevado. Sugestão: +2un Regular e água.' : 'Valor excelente! Continue cuidando de você.'}</div>
-                </div>`;
-            }).join('');
-        }
-        render();
-    </script>
+</div>
+</div>
+
+<script>
+const ALVO=130;
+const FSI=72;
+
+/* SINCRONIZAÇÃO COM AJUSTES.HTML */
+const STORAGE_KEY = 'gabi_database'; // Mesma chave usada no relatório para ler os dados
+const DOSES_KEY = 'gabi_ajustes_vFinal'; // Mesma chave usada para salvar as medicações
+
+let ultimaGlicemiaPorPeriodo={};
+
+// Função para carregar as doses da aba Ajustes
+function carregarDoses() {
+    const container = document.getElementById('dosesDinamicas');
+    const dosesSalvas = JSON.parse(localStorage.getItem(DOSES_KEY)) || [];
+    
+    if (dosesSalvas.length === 0) {
+        container.innerHTML = '<div class="dose-box">Nenhuma dose cadastrada</div>';
+        return;
+    }
+
+    container.innerHTML = dosesSalvas.map(d => `
+        <div class="dose-box">${d.nome} <b>${d.qtd}</b></div>
+    `).join('');
+}
+
+function dataAtual(){
+    return data_retro.value
+        ? data_retro.value.split("-").reverse().join("/")
+        : new Date().toLocaleDateString("pt-BR");
+}
+
+function salvar(){
+    const valor=parseInt(glicemia.value);
+    if(!valor)return;
+
+    const registro={
+        momento:momento.value,
+        valor,
+        data:dataAtual(),
+        hora:hora_retro.value || new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+    };
+
+    const dados=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];
+    dados.push(registro);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(dados));
+
+    renderizar(dataAtual());
+    glicemia.value="";
+}
+
+function renderizar(dataFiltro){
+    historico.innerHTML="";
+    ultimaGlicemiaPorPeriodo={};
+
+    const dados=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];
+    // Filtra apenas para o dia selecionado
+    const filtrados = dados.filter(r=>r.data===dataFiltro);
+    
+    if(filtrados.length === 0) {
+        historico.innerHTML = "<p style='text-align:center; color:#999; font-size:12px;'>Nenhum registro para esta data.</p>";
+    }
+
+    filtrados.forEach(r=>criarCard(r));
+}
+
+function criarCard(r){
+    let feedback="",classe="";
+    const ultima=ultimaGlicemiaPorPeriodo[r.momento];
+    const primeira=ultima===undefined;
+    const subiu=!primeira && r.valor>ultima;
+
+    if(r.valor<70){
+        feedback="Hipoglicemia! Consumir carboidrato rápido.";
+        classe="hipo";
+    }else if(r.valor<=130){
+        feedback="Valor excelente! Continue cuidando de você.";
+        classe="excelente";
+    }else if(r.valor<=180){
+        feedback="Valor um pouco alto. Beba água e monitore.";
+        classe="alerta";
+    }else{
+        feedback=(primeira||subiu)
+            ?`Valor elevado. Sugestão: +${Math.ceil((r.valor-ALVO)/FSI)}un Regular e água.`
+            :"Aguarde a ação da dose anterior e hidrate.";
+        classe="hiper";
+    }
+
+    const id="card-"+r.momento.replace(/\s/g,"");
+    let card=document.getElementById(id);
+
+    if(!card){
+        card=document.createElement("div");
+        card.id=id;
+        card.className="group-card";
+        card.innerHTML=`
+        <div class="group-header">${r.momento}</div>
+        <div class="main-entry">
+            <div style="font-size:10px">${r.data} - ${r.hora}</div>
+            <div class="main-val">${r.valor} mg/dL</div>
+            <div class="main-feedback ${classe}">${feedback}</div>
+        </div>
+        <div class="sub-list"></div>`;
+        historico.appendChild(card);
+    }else{
+        const sub=document.createElement("div");
+        sub.className="sub-entry";
+        sub.innerHTML=`
+        <div class="sub-time-row">${r.hora} - ${r.valor} mg/dL</div>
+        <div class="${classe}">${feedback}</div>`;
+        card.querySelector(".sub-list").appendChild(sub);
+    }
+
+    ultimaGlicemiaPorPeriodo[r.momento]=r.valor;
+}
+
+// Escuta mudanças no calendário para atualizar a lista
+data_retro.addEventListener("change",()=>renderizar(dataAtual()));
+
+// Inicialização
+window.onload = function() {
+    carregarDoses();
+    renderizar(dataAtual());
+};
+</script>
+
 </body>
 </html>
