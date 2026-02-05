@@ -10,78 +10,95 @@
         .card { background: var(--lavanda); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e3d9ff; }
         label { font-size: 11px; font-weight: bold; color: var(--primaria); text-transform: uppercase; display: block; margin: 10px 0 5px; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-top: 15px; }
-        .item { background: white; padding: 10px; border-radius: 8px; margin-top: 5px; border-left: 4px solid var(--primaria); display: flex; justify-content: space-between; }
+        .btn { background: var(--primaria); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        .item-glicemia { background: white; padding: 12px; border-radius: 10px; margin-top: 8px; border-left: 5px solid var(--primaria); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .item-glicemia b { color: var(--primaria); font-size: 16px; }
         h2 { color: var(--primaria); margin-top: 0; font-size: 18px; }
     </style>
 </head>
 <body>
     <h2>Registrar Glicemia</h2>
     <div class="card">
-        <label>Data</label>
+        <label>Data da Medição</label>
         <input type="date" id="dataReg" onchange="listarRegistrosDia()">
         
-        <label>Momento da Medição</label>
+        <label>Momento (Reflete no Relatório)</label>
         <select id="momentoReg">
-            <option>Jejum</option>
-            <option>Pós café</option>
-            <option>Antes do almoço</option>
-            <option>Depois do almoço</option>
-            <option>Antes da janta</option>
-            <option>Depois da janta</option>
-            <option>Madrugada</option>
+            <option value="Jejum">Jejum</option>
+            <option value="Pós café">Pós café</option>
+            <option value="Antes do almoço">Antes do almoço</option>
+            <option value="Depois do almoço">Depois do almoço</option>
+            <option value="Antes da janta">Antes da janta</option>
+            <option value="Depois da janta">Depois da janta</option>
+            <option value="Madrugada">Madrugada</option>
         </select>
 
-        <label>Valor (mg/dL)</label>
-        <input type="number" id="valorGlicose" placeholder="000">
+        <label>Valor Glicêmico (mg/dL)</label>
+        <input type="number" id="valorGlicose" placeholder="Ex: 110">
         
-        <button class="btn" onclick="salvar()">Salvar Medição</button>
+        <button class="btn" onclick="salvar()">Salvar e Atualizar</button>
     </div>
 
-    <div class="card" id="cardDoses">
-        <label>Minhas Doses (Cadastradas em Ajustes)</label>
-        <div id="listaDoses"></div>
-    </div>
-
-    <label>Registros de Hoje</label>
+    <label id="labelHistorico">Registros do Dia Selecionado</label>
     <div id="listaDia"></div>
 
     <script>
+        // Inicia com a data de hoje
         document.getElementById('dataReg').valueAsDate = new Date();
 
         function salvar() {
-            const data = document.getElementById('dataReg').value;
+            const dataInput = document.getElementById('dataReg').value; // Formato YYYY-MM-DD
             const momento = document.getElementById('momentoReg').value;
             const valor = document.getElementById('valorGlicose').value;
-            if(!valor) return alert("Digite o valor!");
 
-            const dataBr = data.split('-').reverse().join('/');
-            const db = JSON.parse(localStorage.getItem('gabi_glicemias') || '[]');
+            if(!valor || !dataInput) return alert("Preencha a data e o valor!");
+
+            // Converter data para o formato de busca DD/MM/YYYY
+            const partes = dataInput.split('-');
+            const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+            let db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
             
-            db.push({ data: dataBr, dataISO: data, momento, valor });
-            localStorage.setItem('gabi_glicemias', JSON.stringify(db));
-            
+            // Adiciona o novo registro
+            db.push({
+                data: dataBr,
+                dataISO: dataInput,
+                momento: momento,
+                valor: valor,
+                timestamp: new Date().getTime()
+            });
+
+            localStorage.setItem('gabi_database', JSON.stringify(db));
             document.getElementById('valorGlicose').value = "";
-            alert("Salvo!");
-            listarRegistrosDia();
+            
+            alert("Medição salva com sucesso!");
+            listarRegistrosDia(); // Atualiza a lista embaixo na hora
         }
 
         function listarRegistrosDia() {
-            const dataSel = document.getElementById('dataReg').value.split('-').reverse().join('/');
-            const db = JSON.parse(localStorage.getItem('gabi_glicemias') || '[]');
-            const list = db.filter(i => i.data === dataSel);
+            const dataInput = document.getElementById('dataReg').value;
+            const partes = dataInput.split('-');
+            const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
             
-            document.getElementById('listaDia').innerHTML = list.map(i => `
-                <div class="item"><span>${i.momento}</span><b>${i.valor} mg/dL</b></div>
-            `).join('') || '<small>Nenhum registro.</small>';
-
-            // Carrega Doses da Aba Ajustes
-            const doses = JSON.parse(localStorage.getItem('gabi_ajustes_vFinal') || '[]');
-            document.getElementById('listaDoses').innerHTML = doses.map(d => `
-                <div class="item"><span>💉 ${d.nome}</span><b>${d.qtd}</b></div>
-            `).join('') || '<small>Vá em Ajustes para cadastrar suas doses.</small>';
+            const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
+            
+            // Filtra apenas as medições do dia que está selecionado no calendário
+            const filtrados = db.filter(i => i.data === dataBr);
+            
+            const area = document.getElementById('listaDia');
+            if (filtrados.length === 0) {
+                area.innerHTML = '<p style="color:#888; font-size:13px;">Nenhum registro para esta data.</p>';
+            } else {
+                area.innerHTML = filtrados.map(i => `
+                    <div class="item-glicemia">
+                        <span>${i.momento}</span>
+                        <b>${i.valor} <small>mg/dL</small></b>
+                    </div>
+                `).join('');
+            }
         }
 
+        // Carrega os dados assim que abre a tela
         listarRegistrosDia();
     </script>
 </body>
