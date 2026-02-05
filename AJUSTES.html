@@ -3,30 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relatório Glicêmico</title>
+<title>GlicoGabi - Ajustes</title>
+
 <style>
-body{font-family:Segoe UI;background:#f2f2f2;margin:0}
-.container{padding:15px}
+body{
+    margin:0;
+    font-family:Segoe UI, sans-serif;
+    background:#f2f2f2;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+    background:#fff;
+    min-height:100vh;
+    padding:15px;
+}
+h2,h3{
+    margin-top:10px;
+}
+.section{
+    margin-top:20px;
+    padding:15px;
+    border-radius:10px;
+    background:#fafafa;
+    border:1px solid #ddd;
+}
+input,select,button{
+    padding:8px;
+    margin-top:5px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+button{
+    background:#7e57ff;
+    color:#fff;
+    font-weight:bold;
+    border:none;
+    cursor:pointer;
+}
 table{
     width:100%;
     border-collapse:collapse;
-    background:#fff;
-    font-size:12px
+    margin-top:10px;
+    font-size:12px;
 }
 th,td{
     border:1px solid #ccc;
     padding:5px;
-    text-align:center
+    text-align:center;
 }
-th{background:#7e57ff;color:#fff}
+th{
+    background:#7e57ff;
+    color:#fff;
+}
+.flex{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.box{
+    flex:1;
+    min-width:120px;
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="container">
+
+<h2>⚙️ Ajustes – GlicoGabi</h2>
+
+<!-- ================= DOSES ================= -->
+<div class="section">
+<h3>Doses Padrão</h3>
+
+<div class="flex">
+    <div class="box">
+        <label>NPH (un)</label>
+        <input type="number" id="dose_nph">
+    </div>
+    <div class="box">
+        <label>Regular (un)</label>
+        <input type="number" id="dose_regular">
+    </div>
+    <div class="box">
+        <label>Metformina (mg)</label>
+        <input type="number" id="dose_metformina">
+    </div>
+</div>
+
+<button onclick="salvarDoses()">Salvar Doses</button>
+</div>
+
+<!-- ================= RELATÓRIO ================= -->
+<div class="section">
 <h3>Relatório Mensal</h3>
 
-<select id="mes" onchange="renderizar()">
+<select id="mes" onchange="carregarRelatorio()">
 <option value="01">Janeiro</option>
 <option value="02">Fevereiro</option>
 <option value="03">Março</option>
@@ -54,13 +127,37 @@ th{background:#7e57ff;color:#fff}
 <th>Madrugada</th>
 </tr>
 </thead>
-<tbody id="tabela"></tbody>
+<tbody id="tabelaRelatorio"></tbody>
 </table>
 </div>
 
-<script>
-const STORAGE_GLICO = "glicogabi_medicoes";
+</div>
 
+<script>
+/* ================= STORAGE ================= */
+const STORAGE_GLICO = "glicogabi_medicoes";
+const STORAGE_DOSES = "glicogabi_doses";
+
+/* ================= DOSES ================= */
+function salvarDoses(){
+    const doses = {
+        nph: dose_nph.value,
+        regular: dose_regular.value,
+        metformina: dose_metformina.value
+    };
+    localStorage.setItem(STORAGE_DOSES, JSON.stringify(doses));
+    alert("Doses salvas com sucesso ✅");
+}
+
+function carregarDoses(){
+    const doses = JSON.parse(localStorage.getItem(STORAGE_DOSES));
+    if(!doses) return;
+    dose_nph.value = doses.nph || "";
+    dose_regular.value = doses.regular || "";
+    dose_metformina.value = doses.metformina || "";
+}
+
+/* ================= RELATÓRIO ================= */
 const mapa = {
     "Jejum":"cafeAntes",
     "Pós café":"cafeDepois",
@@ -71,6 +168,51 @@ const mapa = {
     "Madrugada":"madrugada"
 };
 
-function renderizar(){
+function carregarRelatorio(){
     const mesSelecionado = mes.value;
-    const dados = JSON.parse(localStorage.getItem(STORAGE_GLICO_
+    const dados = JSON.parse(localStorage.getItem(STORAGE_GLICO)) || [];
+    const linhas = {};
+
+    dados.forEach(r=>{
+        const [ano,mesData,dia] = r.data.split("-");
+        if(mesData !== mesSelecionado) return;
+
+        if(!linhas[r.data]){
+            linhas[r.data] = {
+                cafeAntes:"",
+                cafeDepois:"",
+                almocoAntes:"",
+                almocoDepois:"",
+                jantarAntes:"",
+                jantarDepois:"",
+                madrugada:""
+            };
+        }
+        linhas[r.data][mapa[r.momento]] = r.valor;
+    });
+
+    tabelaRelatorio.innerHTML = "";
+
+    Object.keys(linhas).sort().forEach(data=>{
+        const r = linhas[data];
+        tabelaRelatorio.innerHTML += `
+        <tr>
+            <td>${data.split("-").reverse().join("/")}</td>
+            <td>${r.cafeAntes}</td>
+            <td>${r.cafeDepois}</td>
+            <td>${r.almocoAntes}</td>
+            <td>${r.almocoDepois}</td>
+            <td>${r.jantarAntes}</td>
+            <td>${r.jantarDepois}</td>
+            <td>${r.madrugada}</td>
+        </tr>`;
+    });
+}
+
+/* ================= INIT ================= */
+carregarDoses();
+carregarRelatorio();
+</script>
+
+</body>
+</html>
