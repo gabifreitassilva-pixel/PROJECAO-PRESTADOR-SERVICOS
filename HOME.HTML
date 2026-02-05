@@ -22,7 +22,7 @@
         <label>Data da Medição</label>
         <input type="date" id="dataReg" onchange="listarRegistrosDia()">
         
-        <label>Momento (Reflete no Relatório)</label>
+        <label>Momento da Medição</label>
         <select id="momentoReg">
             <option value="Jejum">Jejum</option>
             <option value="Pós café">Pós café</option>
@@ -33,16 +33,17 @@
             <option value="Madrugada">Madrugada</option>
         </select>
 
-        <label>Valor Glicêmico (mg/dL)</label>
-        <input type="number" id="valorGlicose" placeholder="Ex: 110">
+        <label>Valor (mg/dL)</label>
+        <input type="number" id="valorGlicose" placeholder="000">
         
-        <button class="btn" onclick="salvar()">Salvar e Atualizar</button>
+        <button class="btn" onclick="salvar()">Salvar Medição</button>
     </div>
 
-    <label id="labelHistorico">Registros do Dia Selecionado</label>
+    <label>Histórico do Dia Selecionado</label>
     <div id="listaDia"></div>
 
     <script>
+        // Define data de hoje ao abrir
         document.getElementById('dataReg').valueAsDate = new Date();
 
         function salvar() {
@@ -50,49 +51,44 @@
             const momento = document.getElementById('momentoReg').value;
             const valor = document.getElementById('valorGlicose').value;
 
-            if(!valor || !dataInput) return alert("Preencha a data e o valor!");
+            if(!valor || !dataInput) return alert("Por favor, preencha o valor e a data.");
 
-            const partes = dataInput.split('-');
-            const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            // Formata data para DD/MM/YYYY para o banco de dados
+            const p = dataInput.split('-');
+            const dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
 
             let db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
             
+            // Salva o registro
             db.push({
-                data: dataBr,
-                dataISO: dataInput,
+                data: dataFormatada,
                 momento: momento,
-                valor: valor,
-                timestamp: new Date().getTime()
+                valor: valor
             });
 
             localStorage.setItem('gabi_database', JSON.stringify(db));
-            document.getElementById('valorGlicose').value = "";
             
-            alert("Medição salva com sucesso!");
+            // Limpa o campo e atualiza a lista visual
+            document.getElementById('valorGlicose').value = "";
+            alert("Registrado com sucesso!");
             listarRegistrosDia();
         }
 
         function listarRegistrosDia() {
             const dataInput = document.getElementById('dataReg').value;
-            if(!dataInput) return;
-            const partes = dataInput.split('-');
-            const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            const p = dataInput.split('-');
+            const dataBusca = `${p[2]}/${p[1]}/${p[0]}`;
             
             const db = JSON.parse(localStorage.getItem('gabi_database') || '[]');
-            const filtrados = db.filter(i => i.data === dataBr);
+            const filtrados = db.filter(i => i.data === dataBusca);
             
             const area = document.getElementById('listaDia');
-            if (filtrados.length === 0) {
-                area.innerHTML = '<p style="color:#888; font-size:13px;">Nenhum registro para esta data.</p>';
-            } else {
-                area.innerHTML = filtrados.map(i => `
-                    <div class="item-glicemia">
-                        <span>${i.momento}</span>
-                        <b>${i.valor} <small>mg/dL</small></b>
-                    </div>
-                `).join('');
-            }
+            area.innerHTML = filtrados.length > 0 ? 
+                filtrados.map(i => `<div class="item-glicemia"><span>${i.momento}</span><b>${i.valor} mg/dL</b></div>`).join('') :
+                '<p style="color:gray; font-size:12px;">Nenhum registro para este dia.</p>';
         }
+
+        // Carrega a lista ao abrir a tela
         listarRegistrosDia();
     </script>
 </body>
