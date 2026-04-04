@@ -161,6 +161,7 @@
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase font-mono tracking-wider">Cód. Municipal</label>
                             <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono transition-all" placeholder="De/Para Auto">
+                            <span id="msgErroConversao" class="hidden-el text-[9px] text-red-500 font-bold mt-1.5 flex items-center gap-1 uppercase tracking-wider"><i data-lucide="alert-circle" class="w-3 h-3"></i> <span id="txtErroConversao">Código não mapeado</span></span>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Valor Bruto (R$)</label>
@@ -419,7 +420,7 @@
         let REGRAS_DATA = {};
         let TABELA_CONVERSAO = {};
         let state = {
-            regime: 'normal', municipio: '', valorTotal: 0, valorMaterial: 0,
+            regime: 'normal', municipio: '', municipioNormalizado: '', valorTotal: 0, valorMaterial: 0,
             modalPerguntas: [], reterInssConfirmado: false, basePerc: 100, deducaoExata: 0
         };
 
@@ -443,7 +444,14 @@
                     REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
                     
                     const rawConv = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
-                    TABELA_CONVERSAO = rawConv.conversoes ? rawConv.conversoes : rawConv;
+                    const baseConv = rawConv.conversoes ? rawConv.conversoes : rawConv;
+                    
+                    // Normalização Universal: Remove acentos e converte para maiúsculo
+                    TABELA_CONVERSAO = {};
+                    for(let key in baseConv) {
+                        let normKey = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                        TABELA_CONVERSAO[normKey] = baseConv[key];
+                    }
 
                     popularSelect();
                     document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
@@ -490,6 +498,9 @@
                     const data = await res.json();
                     if(data.razao_social) {
                         state.municipio = data.municipio;
+                        // Normaliza o município recebido da BrasilAPI
+                        state.municipioNormalizado = data.municipio.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                        
                         document.getElementById('razaoSocialNome').textContent = data.razao_social;
                         document.getElementById('razaoSocialMunicipio').innerHTML = `<i data-lucide="map-pin" class="w-2.5 h-2.5"></i> ${data.municipio} - ${data.uf}`;
                         
@@ -511,20 +522,55 @@
             };
 
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
-                const muni = e.target.value.trim();
-                const fed = TABELA_CONVERSAO[muni];
+                const codDigitado = e.target.value.trim().toUpperCase();
+                const msgErro = document.getElementById('msgErroConversao');
+                const txtErro = document.getElementById('txtErroConversao');
+                
+                if(!codDigitado) {
+                    e.target.classList.remove('border-green-500', 'focus:border-green-500', 'border-red-500', 'focus:border-red-500');
+                    e.target.classList.add('border-gray-700', 'focus:border-orange-500');
+                    e.target.style.borderWidth = "1px";
+                    msgErro.classList.add('hidden-el');
+                    return;
+                }
+                
+                let fed = null;
+                let erroMsgTexto = "Código não mapeado";
+
+                // Tenta buscar no município normalizado
+                if (state.municipioNormalizado) {
+                    if (TABELA_CONVERSAO[state.municipioNormalizado]) {
+                        fed = TABELA_CONVERSAO[state.municipioNormalizado][codDigitado];
+                        if (!fed) erroMsgTexto = "Código municipal não encontrado";
+                    } else {
+                        // Fallback: tenta buscar de forma direta se o município não existir
+                        if (typeof TABELA_CONVERSAO[codDigitado] === 'string') {
+                            fed = TABELA_CONVERSAO[codDigitado];
+                        } else {
+                            erroMsgTexto = "Município não mapeado no sistema";
+                        }
+                    }
+                } else if (typeof TABELA_CONVERSAO[codDigitado] === 'string') {
+                    fed = TABELA_CONVERSAO[codDigitado];
+                }
                 
                 if(fed) {
                     const sel = document.getElementById('codigoServico');
                     if(sel.querySelector(`option[value="${fed}"]`)) {
                         sel.value = fed;
                         sel.dispatchEvent(new Event('change'));
-                        e.target.classList.remove('border-gray-700', 'focus:border-orange-500');
+                        e.target.classList.remove('border-gray-700', 'focus:border-orange-500', 'border-red-500', 'focus:border-red-500');
                         e.target.classList.add('border-green-500', 'focus:border-green-500');
+                        e.target.style.borderWidth = "2px";
+                        msgErro.classList.add('hidden-el');
                     }
                 } else { 
-                    e.target.classList.add('border-gray-700', 'focus:border-orange-500');
-                    e.target.classList.remove('border-green-500', 'focus:border-green-500');
+                    e.target.classList.remove('border-green-500', 'focus:border-green-500', 'border-gray-700', 'focus:border-orange-500');
+                    e.target.classList.add('border-red-500', 'focus:border-red-500');
+                    e.target.style.borderWidth = "2px";
+                    if(txtErro) txtErro.textContent = erroMsgTexto;
+                    msgErro.classList.remove('hidden-el');
+                    lucide.createIcons();
                 }
             });
 
