@@ -33,19 +33,13 @@
 </head>
 <body class="font-sans selection:bg-orange-500/30 p-2 md:p-4 flex flex-col min-h-screen text-white custom-scroll">
 
-    <footer class="fixed bottom-4 right-4 opacity-30 hover:opacity-100 cursor-pointer transition-opacity z-50 no-print">
-        <button id="btnOpenAdmin" class="p-2.5 bg-gray-900 border border-gray-700 rounded-full shadow-xl hover:border-orange-500 transition-all text-white">
-            <i data-lucide="settings" class="w-5 h-5"></i>
-        </button>
-    </footer>
-
     <header class="max-w-7xl mx-auto w-full mb-6 flex items-center justify-between border-b border-gray-800 pb-4 shrink-0 mt-2 no-print">
         <div class="flex items-center gap-3">
             <div class="bg-gradient-to-br from-orange-500 to-orange-700 p-2 rounded-xl shadow-lg shadow-orange-900/20">
                 <i data-lucide="shield-check" class="text-[#050505] w-6 h-6"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tighter uppercase">MARADEL ASSESSORIA E CONSULTORIA <span class="text-orange-500"></span></h1>
+                <h1 class="text-xl font-bold text-white tracking-tighter uppercase">MARADEL ASSESSORIA E CONSULTORIA</h1>
                 <p class="text-[9px] text-white font-bold uppercase tracking-[0.2em] mt-1 opacity-80">Conferência Fiscal & Banco de Regras</p>
             </div>
         </div>
@@ -62,13 +56,14 @@
 
     <main class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
         <div class="lg:col-span-5 flex flex-col gap-6 no-print">
+            
             <div class="bg-[#111111] rounded-2xl p-5 border border-gray-800 shadow-xl">
                 <h2 class="text-[11px] font-bold text-orange-500 uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-gray-800/50 pb-2">
-                    <i data-lucide="building" class="w-3.5 h-3.5"></i> 1. Identificação
+                    <i data-lucide="building" class="w-3.5 h-3.5"></i> 1. Identificação do Prestador
                 </h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">CNPJ do Prestador</label>
+                        <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">CNPJ</label>
                         <div class="flex gap-2">
                             <input type="text" id="cnpjPrestador" class="flex-1 bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none transition-all font-mono" placeholder="00.000.000/0000-00">
                             <button id="btnBuscarCnpj" class="bg-orange-600 hover:bg-orange-500 text-white px-4 rounded-lg font-bold transition-all flex items-center justify-center min-w-[48px]">
@@ -76,13 +71,20 @@
                             </button>
                         </div>
                     </div>
-                    <div id="razaoSocialContainer" class="hidden-el p-3 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-1.5 animate-in fade-in">
-                        <span id="razaoSocialNome" class="text-xs font-bold text-white uppercase truncate"></span>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span id="razaoSocialRegime" class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded border"></span>
-                            <span id="razaoSocialMunicipio" class="text-[8px] font-bold uppercase text-gray-100 flex items-center gap-1"></span>
+
+                    <div id="razaoSocialContainer" class="hidden-el p-4 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-2 animate-in fade-in">
+                        <div class="flex justify-between items-start">
+                            <span id="razaoSocialNome" class="text-xs font-bold text-white uppercase break-words pr-2"></span>
+                            <span id="situacaoCadastral" class="text-[8px] font-black uppercase px-2 py-1 rounded"></span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-800">
+                            <span id="razaoSocialRegime" class="text-[8px] font-black uppercase px-2 py-0.5 rounded border"></span>
+                            <span id="razaoSocialMunicipio" class="text-[8px] font-bold uppercase text-gray-400 flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-2.5 h-2.5"></i> <span id="txtMunicipio"></span>
+                            </span>
                         </div>
                     </div>
+
                     <div>
                         <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Perfil do Tomador</label>
                         <select id="tomador" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none appearance-none cursor-pointer">
@@ -116,16 +118,13 @@
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div id="containerAliqISS" class="opacity-30 pointer-events-none transition-all">
+                        <div id="containerAliqISS">
                             <label class="block text-[10px] font-bold text-green-500 mb-1.5 uppercase font-mono tracking-wider">Aliq. ISS (%)</label>
-                            <input type="number" step="0.01" id="aliqISS" value="5.00" class="w-full bg-[#080808] border border-green-500/30 rounded-lg px-3 py-3 text-sm text-white outline-none font-bold">
+                            <input type="number" step="0.01" id="aliqISS" value="5.00" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white outline-none font-bold focus:border-orange-500">
                         </div>
-                        <div id="containerDeducao" class="opacity-30 pointer-events-none transition-all">
-                            <label class="block text-[10px] font-bold text-yellow-500 mb-1.5 uppercase flex justify-between items-center tracking-wider font-black">
-                                <span>Dedução Legal (R$)</span>
-                                <button id="btnToggleSimulador" class="hidden-el text-[8px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded border border-yellow-500/20 hover:bg-yellow-500/20 transition-all font-black">PAINEL</button>
-                            </label>
-                            <input type="text" id="valorMaterial" class="w-full bg-[#080808] border border-yellow-500/20 focus:border-yellow-500 rounded-lg px-3 py-3 text-sm text-white outline-none font-mono font-bold transition-all" placeholder="0,00">
+                        <div id="containerDeducao">
+                            <label class="block text-[10px] font-bold text-yellow-500 mb-1.5 uppercase tracking-wider font-black">Dedução (R$)</label>
+                            <input type="text" id="valorMaterial" class="w-full bg-[#080808] border border-gray-700 focus:border-orange-500 rounded-lg px-3 py-3 text-sm text-white outline-none font-mono font-bold" placeholder="0,00">
                         </div>
                     </div>
                     <button id="btnExecutarAuditoria" class="w-full mt-4 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-[#050505] font-black py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest text-xs flex items-center justify-center gap-2">
@@ -137,9 +136,7 @@
 
         <div class="lg:col-span-7 flex flex-col gap-6">
             <div id="waitingState" class="flex flex-col items-center justify-center text-center p-12 bg-[#111111] border border-gray-800 rounded-2xl border-dashed h-full min-h-[500px] no-print">
-                <div class="bg-[#181818] p-8 rounded-full mb-6 border border-gray-800 shadow-inner">
-                    <i data-lucide="file-search" class="text-white opacity-40 w-16 h-16"></i>
-                </div>
+                <i data-lucide="file-search" class="text-white opacity-40 w-16 h-16 mb-4"></i>
                 <h3 class="text-lg font-bold text-white mb-3 uppercase tracking-widest">Aguardando Parâmetros</h3>
             </div>
 
@@ -163,11 +160,11 @@
                 <div class="bg-[#111111] border border-gray-800 rounded-2xl flex flex-col shadow-2xl overflow-hidden">
                     <div class="p-5 border-b border-gray-800 bg-[#181818] flex justify-between items-center">
                         <h3 class="text-[11px] font-black text-orange-500 uppercase tracking-[0.25em]">Parecer Técnico</h3>
-                        <button id="btnImprimir" class="no-print bg-orange-600 hover:bg-orange-500 text-white p-2 rounded-lg transition-colors flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
+                        <button onclick="window.print()" class="no-print bg-orange-600 hover:bg-orange-500 text-white p-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-[9px] font-black uppercase tracking-widest">
                             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Imprimir
                         </button>
                     </div>
-                    <div id="taxesContainer" class="p-4 bg-[#080808] space-y-6"></div>
+                    <div id="taxesContainer" class="p-4 bg-[#080808] space-y-4"></div>
                     <div class="p-6 bg-[#111111] border-t border-gray-800 flex justify-between items-center">
                         <span class="text-sm font-black text-white uppercase tracking-widest">Total Descontado</span>
                         <span id="resRetido" class="text-3xl font-bold text-red-500 font-mono"></span>
@@ -178,20 +175,19 @@
     </main>
 
     <div id="auditModal" class="hidden-el fixed inset-0 z-[100] glass flex items-center justify-center p-4">
-        <div class="bg-[#111111] border border-gray-800 rounded-3xl p-10 max-w-6xl w-full shadow-2xl slide-in">
-             <div class="flex items-center justify-between mb-8 border-b border-gray-800/50 pb-5">
-                 <h3 class="text-2xl font-black text-white uppercase">Análise de Enquadramento INSS</h3>
-             </div>
-             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 <button onclick="answerModal(true)" class="bg-green-600 p-8 rounded-3xl font-black uppercase">Sim, Reter 11%</button>
-                 <button onclick="answerModal(false)" class="bg-gray-800 p-8 rounded-3xl font-black uppercase">Não, Isentar</button>
+        <div class="bg-[#111111] border border-gray-800 rounded-3xl p-10 max-w-2xl w-full shadow-2xl slide-in">
+             <h3 class="text-2xl font-black text-white uppercase mb-6 text-center">Há Retenção de INSS? (11%)</h3>
+             <p class="text-gray-400 text-center mb-8 text-sm">O serviço foi executado mediante cessão de mão de obra ou empreitada nas dependências do tomador?</p>
+             <div class="grid grid-cols-2 gap-4">
+                 <button onclick="answerModal(true)" class="bg-green-600 hover:bg-green-500 p-6 rounded-2xl font-black uppercase text-black">Sim, Reter</button>
+                 <button onclick="answerModal(false)" class="bg-gray-800 hover:bg-red-600 p-6 rounded-2xl font-black uppercase text-white">Não, Isentar</button>
              </div>
         </div>
     </div>
 
     <script>
         const GIST_REGRAS_ID = "969b06493ae7642340b3ba741e18959a";
-        const GIST_CONV_ID = "e42228fcaa055218d2c56ba9dc2e3a52"; // SUA CHAVE
+        const GIST_CONV_ID = "e42228fcaa055218d2c56ba9dc2e3a52";
         
         let REGRAS_DATA = {};
         let TABELA_CONVERSAO = {};
@@ -208,81 +204,103 @@
             try {
                 const [resRegras, resConv] = await Promise.all([
                     fetch(`https://api.github.com/gists/${GIST_REGRAS_ID}`),
-                    fetch(`https://api.github.com/gists/${GIST_CONV_ID}`) // Carregando o De/Para
+                    fetch(`https://api.github.com/gists/${GIST_CONV_ID}`)
                 ]);
-
                 if(resRegras.ok && resConv.ok) {
                     const dataRegras = await resRegras.json();
                     const dataConv = await resConv.json();
-                    
                     REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
                     TABELA_CONVERSAO = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
-
                     popularSelect();
                     document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
                     document.getElementById('statusDot').classList.replace('bg-yellow-500', 'bg-green-500');
                 }
-            } catch(e) {
-                document.getElementById('statusText').textContent = "ERRO SINCRONIA";
-            }
+            } catch(e) { document.getElementById('statusText').textContent = "ERRO SINCRONIA"; }
         }
 
         function popularSelect() {
             const select = document.getElementById('codigoServico');
-            select.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+            select.innerHTML = '<option value="" disabled selected>Selecione o Código Federal...</option>';
             Object.keys(REGRAS_DATA).sort().forEach(k => {
                 const opt = document.createElement('option');
                 opt.value = k;
-                opt.textContent = `${k} - ${REGRAS_DATA[k].desc.substring(0, 70)}...`;
+                opt.textContent = `${k} - ${REGRAS_DATA[k].desc.substring(0, 65)}...`;
                 select.appendChild(opt);
             });
         }
 
         function setupEvents() {
-            // Lógica de Conversão Automática
-            document.getElementById('codMunicipal').addEventListener('input', (e) => {
-                const municipal = e.target.value.trim();
-                const federal = TABELA_CONVERSAO[municipal]; // Busca no novo Gist
+            // Busca CNPJ com Situação e Município corrigidos
+            document.getElementById('btnBuscarCnpj').onclick = async () => {
+                const cnpj = document.getElementById('cnpjPrestador').value.replace(/\D/g, '');
+                if(cnpj.length !== 14) return;
                 
-                if(federal) {
-                    const select = document.getElementById('codigoServico');
-                    select.value = federal;
-                    select.dispatchEvent(new Event('change'));
-                    e.target.style.borderColor = "#22c55e"; // Borda verde se achar
-                } else {
-                    e.target.style.borderColor = "#374151";
-                }
-            });
+                const btn = document.getElementById('btnBuscarCnpj');
+                btn.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin w-4 h-4"></i>`;
+                lucide.createIcons();
 
-            document.getElementById('codigoServico').onchange = () => {
-                const r = REGRAS_DATA[document.getElementById('codigoServico').value];
-                document.getElementById('containerAliqISS').classList.toggle('opacity-30', (r.iss !== "S"));
-                document.getElementById('containerAliqISS').classList.toggle('pointer-events-none', (r.iss !== "S"));
+                try {
+                    const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+                    const data = await res.json();
+                    
+                    if(data.razao_social) {
+                        // 1. Razão Social
+                        document.getElementById('razaoSocialNome').textContent = data.razao_social;
+                        
+                        // 2. Município (Corrigido)
+                        document.getElementById('txtMunicipio').textContent = `${data.municipio} - ${data.uf}`;
+                        
+                        // 3. Situação Cadastral
+                        const situacao = data.descricao_situacao_cadastral || "NÃO INFORMADA";
+                        const elSituacao = document.getElementById('situacaoCadastral');
+                        elSituacao.textContent = situacao;
+                        
+                        // Cores para situação
+                        if(situacao === "ATIVA") {
+                            elSituacao.className = "text-[8px] font-black uppercase px-2 py-1 rounded bg-green-500/20 text-green-500 border border-green-500/30";
+                        } else {
+                            elSituacao.className = "text-[8px] font-black uppercase px-2 py-1 rounded bg-red-500/20 text-red-500 border border-red-500/30";
+                        }
+
+                        // 4. Regime Tributário
+                        state.regime = data.opcao_pelo_mei ? 'mei' : (data.opcao_pelo_simples ? 'simples' : 'normal');
+                        const elRegime = document.getElementById('razaoSocialRegime');
+                        elRegime.textContent = state.regime.toUpperCase();
+                        elRegime.className = `text-[8px] font-black uppercase px-2 py-0.5 rounded border ${
+                            state.regime === 'mei' ? 'border-purple-500 text-purple-400' : 
+                            (state.regime === 'simples' ? 'border-green-500 text-green-500' : 'border-orange-500 text-orange-500')
+                        }`;
+
+                        document.getElementById('razaoSocialContainer').classList.remove('hidden-el');
+                    }
+                } catch(e) { alert("Erro ao buscar CNPJ"); }
+                
+                btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+            };
+
+            // Conversão Automática
+            document.getElementById('codMunicipal').oninput = (e) => {
+                const fed = TABELA_CONVERSAO[e.target.value.trim()];
+                if(fed) {
+                    const sel = document.getElementById('codigoServico');
+                    sel.value = fed;
+                    sel.dispatchEvent(new Event('change'));
+                    e.target.classList.add('border-green-500');
+                } else {
+                    e.target.classList.remove('border-green-500');
+                }
             };
 
             document.getElementById('btnExecutarAuditoria').onclick = () => {
-                if(state.valorTotal <= 0 || !document.getElementById('codigoServico').value) return;
-                const r = REGRAS_DATA[document.getElementById('codigoServico').value];
-                if(parseFloat(r.inss) > 0) {
+                const cod = document.getElementById('codigoServico').value;
+                if(!cod || state.valorTotal <= 0) return;
+                const r = REGRAS_DATA[cod];
+                if(parseFloat(r.inss) > 0 && state.regime !== 'mei') {
                     document.getElementById('auditModal').classList.remove('hidden-el');
                 } else {
                     answerModal(false);
                 }
-            };
-
-            document.getElementById('btnBuscarCnpj').onclick = async () => {
-                const cnpj = document.getElementById('cnpjPrestador').value.replace(/\D/g, '');
-                if(cnpj.length !== 14) return;
-                try {
-                    const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-                    const data = await res.json();
-                    if(data.razao_social) {
-                        document.getElementById('razaoSocialNome').textContent = data.razao_social;
-                        state.regime = data.opcao_pelo_mei ? 'mei' : (data.opcao_pelo_simples ? 'simples' : 'normal');
-                        document.getElementById('razaoSocialRegime').textContent = state.regime.toUpperCase();
-                        document.getElementById('razaoSocialContainer').classList.remove('hidden-el');
-                    }
-                } catch(e) {}
             };
         }
 
@@ -296,19 +314,31 @@
             const cod = document.getElementById('codigoServico').value;
             const r = REGRAS_DATA[cod];
             const vBruto = state.valorTotal;
+            const tomador = document.getElementById('tomador').value;
             let imps = [];
 
             // ISS
-            const aliqIss = parseFloat(document.getElementById('aliqISS').value) || 0;
-            imps.push({ n: 'ISS', v: r.iss === 'S' ? vBruto * (aliqIss/100) : 0, r: r.iss === 'S' });
+            const aliq = parseFloat(document.getElementById('aliqISS').value) || 0;
+            if(r.iss === 'S' && state.regime !== 'mei') {
+                imps.push({ n: 'ISS Retido', v: vBruto * (aliq/100), desc: 'Retenção municipal na fonte.' });
+            }
 
             // INSS
-            const vInss = (state.reterInssConfirmado && state.regime !== 'mei') ? (vBruto - state.valorMaterial) * 0.11 : 0;
-            imps.push({ n: 'INSS (11%)', v: vInss, r: vInss > 0 });
+            if(state.reterInssConfirmado) {
+                const baseInss = vBruto - state.valorMaterial;
+                imps.push({ n: 'INSS (11%)', v: baseInss * 0.11, desc: 'Retenção previdenciária.' });
+            }
 
-            // PCC (4.65%)
-            const vPcc = (state.regime === 'normal' && parseFloat(r.pcc) > 0) ? vBruto * 0.0465 : 0;
-            imps.push({ n: 'PIS/COFINS/CSLL', v: vPcc, r: vPcc > 0 });
+            // IRRF (Apenas se Tomador for PJ e Prestador Normal)
+            if(state.regime === 'normal' && tomador === 'PJ' && parseFloat(r.ir) > 0) {
+                const vIr = vBruto * (parseFloat(r.ir)/100);
+                if(vIr >= 10) imps.push({ n: 'IRRF', v: vIr, desc: 'Imposto de Renda Retido.' });
+            }
+
+            // PCC
+            if(state.regime === 'normal' && tomador === 'PJ' && parseFloat(r.pcc) > 0) {
+                imps.push({ n: 'CSRF (4,65%)', v: vBruto * 0.0465, desc: 'PIS/COFINS/CSLL (Lei 10.833).' });
+            }
 
             renderResults(imps);
         }
@@ -316,7 +346,6 @@
         function renderResults(imps) {
             document.getElementById('waitingState').classList.add('hidden-el');
             document.getElementById('resultsState').classList.remove('hidden-el');
-            
             const container = document.getElementById('taxesContainer');
             container.innerHTML = '';
             let total = 0;
@@ -324,14 +353,16 @@
             imps.forEach(i => {
                 total += i.v;
                 const div = document.createElement('div');
-                div.className = "flex justify-between p-4 border-b border-gray-800";
-                div.innerHTML = `<span>${i.n}</span><span class="font-mono">R$ ${i.v.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>`;
+                div.className = "flex justify-between items-center p-4 bg-white/5 rounded-xl border border-gray-800";
+                div.innerHTML = `<div><p class="text-xs font-bold">${i.n}</p><p class="text-[9px] text-gray-500 uppercase">${i.desc}</p></div>
+                                 <span class="font-mono text-sm font-bold">R$ ${i.v.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>`;
                 container.appendChild(div);
             });
 
             document.getElementById('resBruto').textContent = "R$ " + state.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2});
             document.getElementById('resRetido').textContent = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
             document.getElementById('resLiquido').textContent = "R$ " + (state.valorTotal - total).toLocaleString('pt-BR', {minimumFractionDigits:2});
+            lucide.createIcons();
         }
 
         function setupMasks() {
