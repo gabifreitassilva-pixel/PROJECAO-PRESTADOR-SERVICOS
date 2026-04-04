@@ -36,19 +36,13 @@
 </head>
 <body class="font-sans selection:bg-orange-500/30 p-2 md:p-4 flex flex-col min-h-screen text-white custom-scroll">
 
-    <footer class="fixed bottom-4 right-4 opacity-30 hover:opacity-100 cursor-pointer transition-opacity z-50 no-print">
-        <button id="btnOpenAdmin" class="p-2.5 bg-gray-900 border border-gray-700 rounded-full shadow-xl hover:border-orange-500 transition-all text-white">
-            <i data-lucide="settings" class="w-5 h-5"></i>
-        </button>
-    </footer>
-
     <header class="max-w-7xl mx-auto w-full mb-6 flex items-center justify-between border-b border-gray-800 pb-4 shrink-0 mt-2 no-print">
         <div class="flex items-center gap-3">
             <div class="bg-gradient-to-br from-orange-500 to-orange-700 p-2 rounded-xl shadow-lg shadow-orange-900/20">
                 <i data-lucide="shield-check" class="text-[#050505] w-6 h-6"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tight leading-none uppercase tracking-tighter">MARADEL ASSESSORIA E CONSULTORIA <span class="text-orange-500"></span></h1>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-none uppercase tracking-tighter">MARADEL CONSULTORIA <span class="text-orange-500"></span></h1>
                 <p class="text-[9px] text-white font-bold uppercase tracking-[0.2em] mt-1 opacity-80">Conferência Fiscal & Banco de Regras</p>
             </div>
         </div>
@@ -64,7 +58,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
-        
         <div class="lg:col-span-5 flex flex-col gap-6 no-print">
             <div class="bg-[#111111] rounded-2xl p-5 border border-gray-800 shadow-xl">
                 <h2 class="text-[11px] font-bold text-orange-500 uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-gray-800/50 pb-2">
@@ -80,14 +73,13 @@
                             </button>
                         </div>
                     </div>
-                    <div id="razaoSocialContainer" class="hidden-el p-3 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-1.5 animate-in fade-in">
+                    <div id="razaoSocialContainer" class="hidden-el p-4 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-2 animate-in fade-in">
                         <span id="razaoSocialNome" class="text-xs font-bold text-white uppercase truncate"></span>
-                        <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span id="razaoSocialRegime" class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded border"></span>
-                            <span id="razaoSocialMunicipio" class="text-[8px] font-bold uppercase text-gray-100 flex items-center gap-1"></span>
-                            <span id="razaoSocialUF" class="text-[8px] font-bold uppercase text-gray-100 flex items-center gap-1 border-l border-gray-700 pl-2"></span>
+                            <span id="razaoSocialMunicipio" class="text-[8px] font-bold uppercase text-gray-100"></span>
                         </div>
-                        <span id="situacaoCadastral" class="hidden"></span>
+                        <div id="situacaoCadastral" class="text-[8px] font-black uppercase px-2 py-1 rounded inline-block w-fit"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Perfil do Tomador</label>
@@ -108,8 +100,8 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase font-mono tracking-wider">Cód. Municipal</label>
-                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono transition-all" placeholder="Digite o código">
-                            <span id="msgErroConversao" class="hidden-el text-[9px] text-red-500 font-bold mt-1 flex items-center gap-1 uppercase tracking-wider"></span>
+                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono transition-all" placeholder="Cód. da NF">
+                            <span id="msgErroConversao" class="hidden-el text-[9px] text-red-500 font-bold mt-1 block uppercase tracking-wider"></span>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Valor Bruto (R$)</label>
@@ -119,19 +111,16 @@
                     <div>
                         <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Código Federal (LC 116/03)</label>
                         <select id="codigoServico" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-xs text-white focus:border-orange-500 outline-none appearance-none cursor-pointer">
-                            <option value="" disabled selected>Aguardando preenchimento...</option>
+                            <option value="" disabled selected>Selecione ou use o Cód. Municipal...</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div id="containerAliqISS" class="opacity-30 pointer-events-none transition-all">
+                        <div id="containerAliqISS">
                             <label class="block text-[10px] font-bold text-green-500 mb-1.5 uppercase font-mono tracking-wider">Aliq. ISS (%)</label>
-                            <input type="number" step="0.01" id="aliqISS" value="5.00" class="w-full bg-[#080808] border border-green-500/30 rounded-lg px-3 py-3 text-sm text-white outline-none font-bold">
+                            <input type="text" id="aliqISS" value="5.00" class="w-full bg-[#080808] border border-green-500/30 rounded-lg px-3 py-3 text-sm text-white outline-none font-bold">
                         </div>
-                        <div id="containerDeducao" class="opacity-30 pointer-events-none transition-all">
-                            <label class="block text-[10px] font-bold text-yellow-500 mb-1.5 uppercase flex justify-between items-center tracking-wider font-black">
-                                <span>Dedução (R$)</span>
-                                <button id="btnToggleSimulador" class="hidden-el text-[8px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded border border-yellow-500/20 hover:bg-yellow-500/20 transition-all font-black">SIMULADOR</button>
-                            </label>
+                        <div id="containerDeducao">
+                            <label class="block text-[10px] font-bold text-yellow-500 mb-1.5 uppercase tracking-wider">Dedução (R$)</label>
                             <input type="text" id="valorMaterial" class="w-full bg-[#080808] border border-yellow-500/20 focus:border-yellow-500 rounded-lg px-3 py-3 text-sm text-white outline-none font-mono font-bold transition-all" placeholder="0,00">
                         </div>
                     </div>
@@ -146,20 +135,18 @@
             <div id="waitingState" class="flex flex-col items-center justify-center text-center p-12 bg-[#111111] border border-gray-800 rounded-2xl border-dashed h-full min-h-[500px] no-print">
                 <i data-lucide="file-search" class="text-white opacity-40 w-16 h-16 mb-6"></i>
                 <h3 class="text-lg font-bold text-white mb-3 uppercase tracking-widest">Aguardando Parâmetros</h3>
-                <p class="text-white opacity-60 text-xs max-w-sm leading-relaxed uppercase tracking-widest">Preencha os dados à esquerda para iniciar a conferência.</p>
+                <p class="text-white opacity-60 text-xs max-w-sm leading-relaxed uppercase tracking-widest">Busque o CNPJ e preencha os dados da nota.</p>
             </div>
 
             <div id="resultsState" class="hidden-el flex flex-col fade-in space-y-6">
-                <div class="bg-[#111111] border border-gray-800 rounded-2xl p-5 shadow-xl no-print">
+                <div class="bg-[#111111] border border-gray-800 rounded-2xl p-5 shadow-xl">
                     <p class="text-[10px] font-bold text-white uppercase mb-1 tracking-widest opacity-80">Líquido ao Prestador</p>
                     <p id="resLiquido" class="text-3xl font-bold text-green-500 font-mono">R$ 0,00</p>
                 </div>
                 <div class="bg-[#111111] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
                     <div class="p-5 border-b border-gray-800 bg-[#181818] flex justify-between items-center">
-                        <h3 class="text-[11px] font-black text-orange-500 uppercase tracking-widest">Parecer de Auditoria</h3>
-                        <button id="btnImprimir" class="bg-orange-600 hover:bg-orange-500 text-white p-2 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest">
-                            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                        </button>
+                        <h3 class="text-[11px] font-black text-orange-500 uppercase tracking-widest">Relatório de Retenções</h3>
+                        <button id="btnImprimir" class="bg-orange-600 hover:bg-orange-500 text-white p-2 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest">IMPRIMIR</button>
                     </div>
                     <div id="taxesContainer" class="p-4 bg-[#080808] space-y-4"></div>
                     <div class="p-6 bg-[#111111] border-t border-gray-800 flex justify-between items-center">
@@ -172,27 +159,18 @@
     </main>
 
     <div id="auditModal" class="hidden-el fixed inset-0 z-[100] glass flex items-center justify-center p-4">
-        <div class="bg-[#111111] border border-gray-800 rounded-3xl p-6 max-w-6xl w-full shadow-2xl slide-in max-h-[95vh] flex flex-col overflow-hidden">
-            <div class="flex items-center justify-between mb-8 border-b border-gray-800/50 pb-5">
-                <h3 class="text-2xl font-black text-white uppercase">Análise de Enquadramento INSS</h3>
-                <div class="text-[10px] font-black text-orange-500 border border-orange-500/30 px-4 py-2 rounded-full uppercase">Auditoria Crítica</div>
-            </div>
-            <div class="flex-1 overflow-y-auto custom-scroll pr-2 mb-8">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                    <div class="flex flex-col gap-6">
-                        <div class="bg-[#181818] rounded-3xl border border-green-500/20 p-8 flex flex-col h-full">
-                            <span class="text-xl font-black text-green-500 uppercase mb-4">SIM, HÁ RETENÇÃO</span>
-                            <div id="modalDetailSim" class="text-sm text-gray-300 leading-relaxed space-y-4 font-medium"></div>
-                        </div>
-                        <button onclick="answerModal(true)" class="bg-[#1ab854] hover:bg-green-500 text-[#050505] font-black py-6 rounded-3xl uppercase text-sm tracking-widest">SIM, RETER IMPOSTO</button>
-                    </div>
-                    <div class="flex flex-col gap-6">
-                        <div class="bg-[#181818] rounded-3xl border border-red-500/20 p-8 flex flex-col h-full">
-                            <span class="text-xl font-black text-red-500 uppercase mb-4">NÃO, É ISENTO</span>
-                            <div id="modalDetailNao" class="text-sm text-gray-300 leading-relaxed space-y-4 font-medium"></div>
-                        </div>
-                        <button onclick="answerModal(false)" class="bg-[#12141d] text-gray-300 border border-[#2a2c35] font-black py-6 rounded-3xl hover:bg-red-600 hover:text-white uppercase text-sm tracking-widest">NÃO, DISPENSAR</button>
-                    </div>
+        <div class="bg-[#111111] border border-gray-800 rounded-3xl p-8 max-w-4xl w-full shadow-2xl">
+            <h3 class="text-xl font-black text-white uppercase mb-6 border-b border-gray-800 pb-4">Análise INSS (Retenção 11%)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-[#181818] p-6 rounded-2xl border border-green-500/20">
+                    <span class="text-green-500 font-black block mb-2 uppercase">Há Cessão de Mão de Obra?</span>
+                    <p class="text-xs text-gray-400 mb-6">Trabalhadores ficam à disposição do tomador em suas dependências?</p>
+                    <button onclick="answerModal(true)" class="w-full bg-green-600 py-4 rounded-xl text-black font-black uppercase text-xs">SIM (RETER)</button>
+                </div>
+                <div class="bg-[#181818] p-6 rounded-2xl border border-red-500/20">
+                    <span class="text-red-500 font-black block mb-2 uppercase">Serviço Eventual?</span>
+                    <p class="text-xs text-gray-400 mb-6">O serviço é pontual e o prestador tem autonomia total sobre a execução?</p>
+                    <button onclick="answerModal(false)" class="w-full bg-gray-800 py-4 rounded-xl text-white font-black uppercase text-xs">NÃO (ISENTAR)</button>
                 </div>
             </div>
         </div>
@@ -201,7 +179,6 @@
     <script>
         const GIST_ID = "969b06493ae7642340b3ba741e18959a";
         const GIST_CONV_ID = "e42228fcaa055218d2c56ba9dc2e3a52";
-        const CODIGOS_MEI_20P = ["07.02", "07.05", "14.01", "14.02"];
 
         let REGRAS_DATA = {};
         let TABELA_CONVERSAO = {};
@@ -234,11 +211,22 @@
                     REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
                     const rawConv = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
                     
-                    // Normaliza os municípios para busca sem acentos/maiúsculo
+                    // NOVA LÓGICA DE PARSE (FEDERAL:MUNICIPAL:ALIQ)
                     TABELA_CONVERSAO = {};
                     for(let cidade in rawConv) {
                         let norm = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
-                        TABELA_CONVERSAO[norm] = rawConv[cidade];
+                        TABELA_CONVERSAO[norm] = {};
+                        
+                        let entries = rawConv[cidade].split(',');
+                        entries.forEach(entry => {
+                            let [fed, mun, aliq] = entry.split(':');
+                            if(mun) {
+                                TABELA_CONVERSAO[norm][mun.trim()] = {
+                                    federal: fed.trim().replace(',', '.'),
+                                    aliq: aliq ? aliq.replace('%', '').replace(',', '.') : "5.00"
+                                };
+                            }
+                        });
                     }
 
                     popularSelect();
@@ -275,14 +263,18 @@
                     const data = await res.json();
                     
                     if(data.razao_social) {
-                        // Captura e normaliza o município da API
                         let nomeCidade = data.municipio.split('-')[0];
                         state.municipioNormalizado = nomeCidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
                         
                         document.getElementById('razaoSocialNome').textContent = data.razao_social;
-                        document.getElementById('razaoSocialMunicipio').textContent = data.municipio;
-                        document.getElementById('razaoSocialUF').textContent = data.uf;
+                        document.getElementById('razaoSocialMunicipio').textContent = data.municipio + ' - ' + data.uf;
                         
+                        // RESTAURAÇÃO DA SITUAÇÃO CADASTRAL
+                        const situ = data.descricao_situacao_cadastral || "ATIVA";
+                        const elSitu = document.getElementById('situacaoCadastral');
+                        elSitu.textContent = situ;
+                        elSitu.className = `text-[8px] font-black uppercase px-2 py-1 rounded inline-block ${situ === 'ATIVA' ? 'bg-green-500/20 text-green-500 border border-green-500/30' : 'bg-red-500/20 text-red-500 border border-red-500/30'}`;
+
                         state.regime = data.opcao_pelo_mei ? 'mei' : (data.opcao_pelo_simples ? 'simples' : 'normal');
                         const elR = document.getElementById('razaoSocialRegime');
                         elR.textContent = state.regime.toUpperCase();
@@ -294,15 +286,16 @@
                 btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`; lucide.createIcons();
             };
 
-            // Lógica de De/Para Municipal Inteligente
+            // LÓGICA DE CONVERSÃO AJUSTADA
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
                 const codDigitado = e.target.value.trim().toUpperCase();
                 const msgErro = document.getElementById('msgErroConversao');
                 const selFed = document.getElementById('codigoServico');
+                const aliqInput = document.getElementById('aliqISS');
 
                 if(!codDigitado) {
                     msgErro.classList.add('hidden-el');
-                    e.target.className = e.target.className.replace(/border-(green|red)-500/g, 'border-gray-700');
+                    e.target.classList.remove('border-green-500', 'border-red-500');
                     return;
                 }
 
@@ -313,17 +306,19 @@
                 }
 
                 const tabelaCidade = TABELA_CONVERSAO[state.municipioNormalizado];
-                if(tabelaCidade && tabelaCidade[codDigitado]) {
-                    const fed = tabelaCidade[codDigitado];
-                    selFed.value = fed;
+                const info = tabelaCidade ? tabelaCidade[codDigitado] : null;
+
+                if(info) {
+                    selFed.value = info.federal;
+                    aliqInput.value = parseFloat(info.aliq).toFixed(2);
                     selFed.dispatchEvent(new Event('change'));
                     msgErro.classList.add('hidden-el');
-                    e.target.classList.remove('border-gray-700', 'border-red-500');
+                    e.target.classList.remove('border-red-500');
                     e.target.classList.add('border-green-500');
                 } else {
                     msgErro.innerHTML = `Cód. não mapeado em ${state.municipioNormalizado}`;
                     msgErro.classList.remove('hidden-el');
-                    e.target.classList.remove('border-gray-700', 'border-green-500');
+                    e.target.classList.remove('border-green-500');
                     e.target.classList.add('border-red-500');
                 }
             });
@@ -332,22 +327,15 @@
                 const cod = document.getElementById('codigoServico').value;
                 const r = REGRAS_DATA[cod];
                 const temINSS = r && parseFloat(r.inss) > 0;
-                document.getElementById('containerAliqISS').classList.toggle('opacity-30', (r.iss || "") !== "S");
-                document.getElementById('containerAliqISS').classList.toggle('pointer-events-none', (r.iss || "") !== "S");
-                document.getElementById('containerDeducao').classList.toggle('opacity-30', !temINSS);
-                document.getElementById('containerDeducao').classList.toggle('pointer-events-none', !temINSS);
+                document.getElementById('btnToggleSimulador').classList.toggle('hidden-el', !temINSS);
             };
 
             document.getElementById('btnExecutarAuditoria').onclick = () => {
                 const cod = document.getElementById('codigoServico').value;
                 if(!cod || state.valorTotal <= 0) return;
-                
                 const r = REGRAS_DATA[cod];
                 if(parseFloat(r.inss) > 0 && state.regime !== 'mei') {
-                    document.getElementById('modalDetailSim').innerHTML = `<p>O código <b>${cod}</b> prevê retenção de 11% de INSS se houver <b>Cessão de Mão de Obra</b> ou <b>Empreitada</b>.</p>`;
-                    document.getElementById('modalDetailNao').innerHTML = `<p>Não haverá retenção se for um serviço eventual, sem subordinação ou sem controle de jornada.</p>`;
                     document.getElementById('auditModal').classList.remove('hidden-el');
-                    lucide.createIcons();
                 } else {
                     state.reterInssConfirmado = false;
                     calcular();
@@ -367,33 +355,32 @@
             const vBruto = state.valorTotal;
             const vDed = state.valorMaterial;
             const tom = document.getElementById('tomador').value;
-            
             let imps = [];
             
             // ISS
             if((r.iss || "") === "S" && state.regime !== 'mei') {
-                const aliq = parseFloat(document.getElementById('aliqISS').value) || 0;
-                imps.push({n:'ISS', r:true, v: vBruto * (aliq/100), f:`Retenção Local (${aliq}%)`});
-            } else { imps.push({n:'ISS', r:false, v:0, f:'Não sujeito ou Isento'}); }
+                const aliq = parseFloat(document.getElementById('aliqISS').value.replace(',', '.')) || 0;
+                imps.push({n:'ISS', r:true, v: vBruto * (aliq/100), f:`Retenção Municipal (${aliq}%)`});
+            } else { imps.push({n:'ISS', r:false, v:0, f: state.regime === 'mei' ? 'MEI Isento' : 'Não sujeito'}); }
 
             // INSS
             if(state.reterInssConfirmado) {
                 const base = Math.max(0, vBruto - vDed);
-                imps.push({n:'INSS', r:true, v: base * 0.11, f:'Retenção 11% s/ Base'});
-            } else { imps.push({n:'INSS', r:false, v:0, f: state.regime === 'mei' ? 'MEI Isento' : 'Não Retém'}); }
+                imps.push({n:'INSS', r:true, v: base * 0.11, f:'Retenção 11% (Cessão M.O.)'});
+            } else { imps.push({n:'INSS', r:false, v:0, f: 'Isento ou S/ Retenção'}); }
 
-            // IRRF (PJ para PJ)
+            // IRRF
             const taxIr = parseFloat(r.ir) || 0;
             if(taxIr > 0 && state.regime === 'normal' && tom === 'PJ') {
                 const v = vBruto * (taxIr/100);
-                imps.push({n:'IRRF', r: v >= 10, v: v >= 10 ? v : 0, f: v >= 10 ? `Retenção ${taxIr}%` : 'Dispensa (Valor < R$10)'});
+                imps.push({n:'IRRF', r: v >= 10, v: v >= 10 ? v : 0, f: v >= 10 ? `Retenção ${taxIr}%` : 'Dispensa < R$10'});
             }
 
-            // PCC (PIS/COFINS/CSLL)
+            // PCC
             const taxPcc = parseFloat(r.pcc) || 0;
             if(taxPcc > 0 && state.regime === 'normal' && tom !== 'CONDOMINIO') {
                 const v = vBruto * 0.0465;
-                imps.push({n:'PCC', r: v > 10, v: v > 10 ? v : 0, f: v > 10 ? 'Retenção 4,65%' : 'Dispensa (Valor < R$10)'});
+                imps.push({n:'PCC (4,65%)', r: v > 10, v: v > 10 ? v : 0, f: v > 10 ? 'PIS/COFINS/CSLL' : 'Dispensa < R$10'});
             }
 
             renderResults(imps);
@@ -402,14 +389,11 @@
         function renderResults(imps) {
             document.getElementById('waitingState').classList.add('hidden-el');
             document.getElementById('resultsState').classList.remove('hidden-el');
-            
             const totalRet = imps.reduce((acc, i) => acc + i.v, 0);
             document.getElementById('resLiquido').textContent = "R$ " + (state.valorTotal - totalRet).toLocaleString('pt-BR', {minimumFractionDigits:2});
             document.getElementById('resRetido').textContent = "R$ " + totalRet.toLocaleString('pt-BR', {minimumFractionDigits:2});
-            
             const container = document.getElementById('taxesContainer');
             container.innerHTML = '';
-            
             imps.forEach(i => {
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center p-3 border-b border-gray-800";
@@ -434,7 +418,7 @@
                 el.addEventListener('input', (e) => {
                     let v = e.target.value.replace(/\D/g, '');
                     let val = v ? parseFloat(v) / 100 : 0;
-                    state[key] = val;
+                    if(key) state[key] = val;
                     el.value = v ? val.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '';
                 });
             };
