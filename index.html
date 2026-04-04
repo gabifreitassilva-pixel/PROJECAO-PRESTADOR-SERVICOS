@@ -74,24 +74,33 @@
                         </div>
                     </div>
                     
-                    <!-- NOVO LAYOUT: Razão Social Container em Grid -->
-                    <div id="razaoSocialContainer" class="hidden-el p-4 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-3 animate-in fade-in">
+                    <!-- NOVO LAYOUT: Razão Social Container em Grid com Cards Internos -->
+                    <div id="razaoSocialContainer" class="hidden-el p-5 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-4 animate-in fade-in">
                         <span id="razaoSocialNome" class="text-sm font-bold text-white uppercase line-clamp-2"></span>
                         
-                        <div class="grid grid-cols-3 gap-3 border-t border-gray-800 pt-3">
-                            <div class="flex flex-col gap-1.5">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Regime</span>
-                                <span id="razaoSocialRegime" class="text-[9px] font-black uppercase px-2 py-1 rounded border w-fit"></span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-gray-800/60 pt-4">
+                            <!-- Bloco Regime -->
+                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <i data-lucide="calculator" class="w-3 h-3 text-orange-500"></i> Regime
+                                </span>
+                                <span id="razaoSocialRegime" class="text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit"></span>
                             </div>
                             
-                            <div class="flex flex-col gap-1.5">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Situação</span>
-                                <span id="situacaoCadastral" class="text-[9px] font-black uppercase px-2 py-1 rounded border w-fit"></span>
+                            <!-- Bloco Situação -->
+                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <i data-lucide="activity" class="w-3 h-3 text-blue-500"></i> Situação
+                                </span>
+                                <span id="situacaoCadastral" class="text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit"></span>
                             </div>
                             
-                            <div class="flex flex-col gap-1.5">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Município</span>
-                                <span id="razaoSocialMunicipio" class="text-[10px] font-bold text-gray-200 uppercase truncate" title=""></span>
+                            <!-- Bloco Município -->
+                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50 overflow-hidden">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                                    <i data-lucide="map-pin" class="w-3 h-3 text-purple-500"></i> Município
+                                </span>
+                                <span id="razaoSocialMunicipio" class="text-[10px] font-bold text-gray-200 uppercase truncate mt-1" title=""></span>
                             </div>
                         </div>
                     </div>
@@ -291,15 +300,16 @@
                         const situ = data.descricao_situacao_cadastral || "ATIVA";
                         const elSitu = document.getElementById('situacaoCadastral');
                         elSitu.textContent = situ;
-                        elSitu.className = `text-[9px] font-black uppercase px-2 py-1 rounded border w-fit ${situ === 'ATIVA' ? 'bg-green-500/20 text-green-500 border-green-500/30' : 'bg-red-500/20 text-red-500 border-red-500/30'}`;
+                        elSitu.className = `text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit ${situ === 'ATIVA' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}`;
 
                         // Regime
                         state.regime = data.opcao_pelo_mei ? 'mei' : (data.opcao_pelo_simples ? 'simples' : 'normal');
                         const elR = document.getElementById('razaoSocialRegime');
                         elR.textContent = state.regime.toUpperCase();
-                        elR.className = `text-[9px] font-black uppercase px-2 py-1 rounded border w-fit ${state.regime === 'mei' ? 'bg-purple-500/10 border-purple-500 text-purple-400' : (state.regime === 'simples' ? 'bg-green-500/10 border-green-500 text-green-500' : 'bg-orange-500/10 border-orange-500 text-orange-500')}`;
+                        elR.className = `text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit ${state.regime === 'mei' ? 'bg-purple-500/10 border-purple-500 text-purple-400' : (state.regime === 'simples' ? 'bg-green-500/10 border-green-500 text-green-500' : 'bg-orange-500/10 border-orange-500 text-orange-500')}`;
                         
                         document.getElementById('razaoSocialContainer').classList.remove('hidden-el');
+                        lucide.createIcons(); // Recriar os ícones dentro das caixas recém expostas
                     }
                 } catch(e) { alert("Erro ao buscar CNPJ"); }
                 btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`; lucide.createIcons();
