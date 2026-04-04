@@ -73,14 +73,29 @@
                             </button>
                         </div>
                     </div>
-                    <div id="razaoSocialContainer" class="hidden-el p-4 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-2 animate-in fade-in">
-                        <span id="razaoSocialNome" class="text-xs font-bold text-white uppercase truncate"></span>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span id="razaoSocialRegime" class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded border"></span>
-                            <span id="razaoSocialMunicipio" class="text-[8px] font-bold uppercase text-gray-100"></span>
+                    
+                    <!-- NOVO LAYOUT: Razão Social Container em Grid -->
+                    <div id="razaoSocialContainer" class="hidden-el p-4 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-3 animate-in fade-in">
+                        <span id="razaoSocialNome" class="text-sm font-bold text-white uppercase line-clamp-2"></span>
+                        
+                        <div class="grid grid-cols-3 gap-3 border-t border-gray-800 pt-3">
+                            <div class="flex flex-col gap-1.5">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Regime</span>
+                                <span id="razaoSocialRegime" class="text-[9px] font-black uppercase px-2 py-1 rounded border w-fit"></span>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1.5">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Situação</span>
+                                <span id="situacaoCadastral" class="text-[9px] font-black uppercase px-2 py-1 rounded border w-fit"></span>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1.5">
+                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Município</span>
+                                <span id="razaoSocialMunicipio" class="text-[10px] font-bold text-gray-200 uppercase truncate" title=""></span>
+                            </div>
                         </div>
-                        <div id="situacaoCadastral" class="text-[8px] font-black uppercase px-2 py-1 rounded inline-block w-fit"></div>
                     </div>
+                    
                     <div>
                         <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Perfil do Tomador</label>
                         <select id="tomador" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none appearance-none cursor-pointer">
@@ -211,7 +226,6 @@
                     REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
                     const rawConv = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
                     
-                    // NOVA LÓGICA DE PARSE (FEDERAL:MUNICIPAL:ALIQ)
                     TABELA_CONVERSAO = {};
                     for(let cidade in rawConv) {
                         let norm = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
@@ -267,18 +281,23 @@
                         state.municipioNormalizado = nomeCidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
                         
                         document.getElementById('razaoSocialNome').textContent = data.razao_social;
-                        document.getElementById('razaoSocialMunicipio').textContent = data.municipio + ' - ' + data.uf;
                         
-                        // RESTAURAÇÃO DA SITUAÇÃO CADASTRAL
+                        // Município com title para hover caso o nome seja muito grande
+                        const elMun = document.getElementById('razaoSocialMunicipio');
+                        elMun.textContent = data.municipio + '-' + data.uf;
+                        elMun.title = data.municipio + '-' + data.uf;
+                        
+                        // Situação Cadastral
                         const situ = data.descricao_situacao_cadastral || "ATIVA";
                         const elSitu = document.getElementById('situacaoCadastral');
                         elSitu.textContent = situ;
-                        elSitu.className = `text-[8px] font-black uppercase px-2 py-1 rounded inline-block ${situ === 'ATIVA' ? 'bg-green-500/20 text-green-500 border border-green-500/30' : 'bg-red-500/20 text-red-500 border border-red-500/30'}`;
+                        elSitu.className = `text-[9px] font-black uppercase px-2 py-1 rounded border w-fit ${situ === 'ATIVA' ? 'bg-green-500/20 text-green-500 border-green-500/30' : 'bg-red-500/20 text-red-500 border-red-500/30'}`;
 
+                        // Regime
                         state.regime = data.opcao_pelo_mei ? 'mei' : (data.opcao_pelo_simples ? 'simples' : 'normal');
                         const elR = document.getElementById('razaoSocialRegime');
                         elR.textContent = state.regime.toUpperCase();
-                        elR.className = `text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${state.regime === 'mei' ? 'border-purple-500 text-purple-400' : 'border-orange-500 text-orange-500'}`;
+                        elR.className = `text-[9px] font-black uppercase px-2 py-1 rounded border w-fit ${state.regime === 'mei' ? 'bg-purple-500/10 border-purple-500 text-purple-400' : (state.regime === 'simples' ? 'bg-green-500/10 border-green-500 text-green-500' : 'bg-orange-500/10 border-orange-500 text-orange-500')}`;
                         
                         document.getElementById('razaoSocialContainer').classList.remove('hidden-el');
                     }
@@ -286,7 +305,6 @@
                 btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`; lucide.createIcons();
             };
 
-            // LÓGICA DE CONVERSÃO AJUSTADA
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
                 const codDigitado = e.target.value.trim().toUpperCase();
                 const msgErro = document.getElementById('msgErroConversao');
@@ -327,7 +345,6 @@
                 const cod = document.getElementById('codigoServico').value;
                 const r = REGRAS_DATA[cod];
                 const temINSS = r && parseFloat(r.inss) > 0;
-                document.getElementById('btnToggleSimulador').classList.toggle('hidden-el', !temINSS);
             };
 
             document.getElementById('btnExecutarAuditoria').onclick = () => {
@@ -357,26 +374,22 @@
             const tom = document.getElementById('tomador').value;
             let imps = [];
             
-            // ISS
             if((r.iss || "") === "S" && state.regime !== 'mei') {
                 const aliq = parseFloat(document.getElementById('aliqISS').value.replace(',', '.')) || 0;
                 imps.push({n:'ISS', r:true, v: vBruto * (aliq/100), f:`Retenção Municipal (${aliq}%)`});
             } else { imps.push({n:'ISS', r:false, v:0, f: state.regime === 'mei' ? 'MEI Isento' : 'Não sujeito'}); }
 
-            // INSS
             if(state.reterInssConfirmado) {
                 const base = Math.max(0, vBruto - vDed);
                 imps.push({n:'INSS', r:true, v: base * 0.11, f:'Retenção 11% (Cessão M.O.)'});
             } else { imps.push({n:'INSS', r:false, v:0, f: 'Isento ou S/ Retenção'}); }
 
-            // IRRF
             const taxIr = parseFloat(r.ir) || 0;
             if(taxIr > 0 && state.regime === 'normal' && tom === 'PJ') {
                 const v = vBruto * (taxIr/100);
                 imps.push({n:'IRRF', r: v >= 10, v: v >= 10 ? v : 0, f: v >= 10 ? `Retenção ${taxIr}%` : 'Dispensa < R$10'});
             }
 
-            // PCC
             const taxPcc = parseFloat(r.pcc) || 0;
             if(taxPcc > 0 && state.regime === 'normal' && tom !== 'CONDOMINIO') {
                 const v = vBruto * 0.0465;
