@@ -498,8 +498,9 @@
                     const data = await res.json();
                     if(data.razao_social) {
                         state.municipio = data.municipio;
-                        // Normaliza o município recebido da BrasilAPI
-                        state.municipioNormalizado = data.municipio.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                        // Separa apenas a cidade (ignorando estados) e normaliza
+                        let nomeCidade = data.municipio.split('-')[0];
+                        state.municipioNormalizado = nomeCidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
                         
                         document.getElementById('razaoSocialNome').textContent = data.razao_social;
                         document.getElementById('razaoSocialMunicipio').innerHTML = `<i data-lucide="map-pin" class="w-2.5 h-2.5"></i> ${data.municipio} - ${data.uf}`;
@@ -537,13 +538,15 @@
                 let fed = null;
                 let erroMsgTexto = "Código não mapeado";
 
-                // Tenta buscar no município normalizado
+                // Busca Inteligente: ignora diferenças pequenas entre Gist e BrasilAPI
                 if (state.municipioNormalizado) {
-                    if (TABELA_CONVERSAO[state.municipioNormalizado]) {
-                        fed = TABELA_CONVERSAO[state.municipioNormalizado][codDigitado];
+                    const chaveMunicipio = Object.keys(TABELA_CONVERSAO).find(k => k.includes(state.municipioNormalizado) || state.municipioNormalizado.includes(k));
+                    
+                    if (chaveMunicipio) {
+                        fed = TABELA_CONVERSAO[chaveMunicipio][codDigitado];
                         if (!fed) erroMsgTexto = "Código municipal não encontrado";
                     } else {
-                        // Fallback: tenta buscar de forma direta se o município não existir
+                        // Fallback: tenta buscar de forma direta se o JSON for plano (sem separar por cidade)
                         if (typeof TABELA_CONVERSAO[codDigitado] === 'string') {
                             fed = TABELA_CONVERSAO[codDigitado];
                         } else {
