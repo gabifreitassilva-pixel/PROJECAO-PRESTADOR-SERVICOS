@@ -382,12 +382,16 @@
     </div>
 
     <script>
-        // ATUALIZADO COM O SEU NOVO ID DO GIST
-        const GIST_ID = "e42228fcaa055218d2c56ba9dc2e3a52";
+        // RECUPERADO O BANCO DE DADOS ORIGINAL DAS REGRAS FISCAIS
+        const GIST_REGRAS = "969b06493ae7642340b3ba741e18959a"; 
+        // ADICIONADO O GIST EXCLUSIVO PARA CONVERSÕES MUNICIPAIS
+        const GIST_CONVERSOES = "e42228fcaa055218d2c56ba9dc2e3a52"; 
+        
         const ADMIN_PASS = "05583070";
         const CODIGOS_MEI_20P = ["07.02", "07.05", "14.01", "14.02"];
 
         let REGRAS_DATA = {};
+        let CONVERSOES_DATA = {};
         let state = {
             regime: 'normal', municipio: '', valorTotal: 0, valorMaterial: 0,
             modalPerguntas: [], reterInssConfirmado: false, basePerc: 100, deducaoExata: 0
@@ -402,16 +406,29 @@
 
         async function loadRegras() {
             try {
-                const url = `https://api.github.com/gists/${GIST_ID}?t=${new Date().getTime()}`;
-                const res = await fetch(url);
-                if(res.ok) {
-                    const data = await res.json();
+                // 1. Carrega as Regras Fiscais (Banco Original)
+                const resRegras = await fetch(`https://api.github.com/gists/${GIST_REGRAS}?t=${new Date().getTime()}`);
+                if(resRegras.ok) {
+                    const data = await resRegras.json();
                     REGRAS_DATA = JSON.parse(data.files[Object.keys(data.files)[0]].content);
-                    popularSelect();
-                    document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
-                    document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-green-500 rounded-full";
                 }
+
+                // 2. Carrega as Conversões Municipais
+                try {
+                    const resConv = await fetch(`https://api.github.com/gists/${GIST_CONVERSOES}?t=${new Date().getTime()}`);
+                    if(resConv.ok) {
+                        const dataConv = await resConv.json();
+                        CONVERSOES_DATA = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
+                    }
+                } catch(e) {
+                    console.warn("Aviso: Falha ao carregar banco de conversões", e);
+                }
+
+                popularSelect();
+                document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
+                document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-green-500 rounded-full";
             } catch(e) {
+                console.error("Erro ao sincronizar Gists:", e);
                 document.getElementById('statusText').textContent = "ERRO SINCRONIA";
                 document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-red-500 rounded-full";
             }
@@ -421,10 +438,13 @@
             const select = document.getElementById('codigoServico');
             select.innerHTML = '<option value="" disabled selected>-- Selecione o Código Federal --</option>';
             Object.keys(REGRAS_DATA).sort().forEach(k => {
-                if(k === "conversoes") return; // Pula a chave de conversoes
+                if(k === "conversoes") return; // Pula a chave de conversoes, se existir na base antiga
                 const opt = document.createElement('option');
                 opt.value = k;
-                opt.textContent = `${k} - ${REGRAS_DATA[k].desc.substring(0, 85)}...`;
+                
+                // Evita quebra caso a descrição não exista no nó analisado
+                const desc = REGRAS_DATA[k].desc || "Descrição indisponível";
+                opt.textContent = `${k} - ${desc.substring(0, 85)}...`;
                 select.appendChild(opt);
             });
         }
@@ -505,12 +525,15 @@
                 const normalizeStr = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                 const munNome = normalizeStr(state.municipio);
                 
-                if (REGRAS_DATA.conversoes) {
+                // Tenta achar a chave de conversões no Gist novo, ou no antigo (compatibilidade)
+                const baseConversoes = CONVERSOES_DATA.conversoes || CONVERSOES_DATA || REGRAS_DATA.conversoes;
+                
+                if (baseConversoes) {
                     // Tenta achar a chave do município no JSON
-                    let municipioKey = Object.keys(REGRAS_DATA.conversoes).find(k => normalizeStr(k) === munNome);
+                    let municipioKey = Object.keys(baseConversoes).find(k => normalizeStr(k) === munNome);
                     
-                    if (municipioKey && REGRAS_DATA.conversoes[municipioKey][codMun]) {
-                        const codFed = REGRAS_DATA.conversoes[municipioKey][codMun];
+                    if (municipioKey && baseConversoes[municipioKey][codMun]) {
+                        const codFed = baseConversoes[municipioKey][codMun];
                         const selectCodServico = document.getElementById('codigoServico');
                         
                         // Se encontrou no select e for diferente, ele muda automaticamente e aciona os cálculos
