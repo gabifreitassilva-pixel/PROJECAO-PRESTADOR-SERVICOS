@@ -84,34 +84,27 @@
                             </button>
                         </div>
                     </div>
-                    
-                    <!-- NOVO LAYOUT: Razão Social Container em Grid com Cards Internos -->
-                    <div id="razaoSocialContainer" class="hidden-el p-5 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-4 animate-in fade-in">
-                        <span id="razaoSocialNome" class="text-sm font-bold text-white uppercase line-clamp-2"></span>
+                    <!-- Área de Detalhes do CNPJ Refinada -->
+                    <div id="razaoSocialContainer" class="hidden-el p-5 bg-[#181818] rounded-xl border border-gray-800 flex flex-col gap-3 animate-in fade-in">
+                        <span id="razaoSocialNome" class="text-sm font-bold text-white uppercase break-words leading-tight"></span>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-gray-800/60 pt-4">
-                            <!-- Bloco Regime -->
-                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <i data-lucide="calculator" class="w-3 h-3 text-orange-500"></i> Regime
-                                </span>
-                                <span id="razaoSocialRegime" class="text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit"></span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-gray-800 pt-3 mt-1">
+                            <div class="flex flex-col items-start gap-1.5">
+                                <span class="text-[8px] text-gray-500 uppercase font-black tracking-wider">Regime Tributário</span>
+                                <span id="razaoSocialRegime" class="text-[9px] font-black uppercase px-2 py-1 rounded border"></span>
                             </div>
                             
-                            <!-- Bloco Situação -->
-                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <i data-lucide="activity" class="w-3 h-3 text-blue-500"></i> Situação
-                                </span>
-                                <span id="situacaoCadastral" class="text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit"></span>
+                            <div class="flex flex-col items-start gap-1.5">
+                                <span class="text-[8px] text-gray-500 uppercase font-black tracking-wider">Situação Cadastral</span>
+                                <span id="razaoSocialSituacao" class="text-[9px] font-black uppercase px-2 py-1 rounded border"></span>
                             </div>
                             
-                            <!-- Bloco Município -->
-                            <div class="flex flex-col gap-2 bg-[#111111] p-3 rounded-lg border border-gray-800/50 overflow-hidden">
-                                <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <i data-lucide="map-pin" class="w-3 h-3 text-purple-500"></i> Município
-                                </span>
-                                <span id="razaoSocialMunicipio" class="text-[10px] font-bold text-gray-200 uppercase truncate mt-1" title=""></span>
+                            <div class="flex flex-col items-start gap-1.5">
+                                <span class="text-[8px] text-gray-500 uppercase font-black tracking-wider">Município</span>
+                                <div class="flex items-center gap-1.5 text-[11px] font-black text-gray-300 py-0.5">
+                                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-orange-500"></i>
+                                    <span id="razaoSocialMunicipio" class="uppercase"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -135,8 +128,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase font-mono tracking-wider">Cód. Municipal</label>
-                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono transition-all" placeholder="Cód. da NF">
-                            <span id="msgErroConversao" class="hidden-el text-[9px] text-red-500 font-bold mt-1 block uppercase tracking-wider"></span>
+                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono" placeholder="Ex: 01015">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Valor Bruto (R$)</label>
@@ -390,15 +382,14 @@
     </div>
 
     <script>
-        const GIST_ID = "969b06493ae7642340b3ba741e18959a";
-        const GIST_CONV_ID = "e42228fcaa055218d2c56ba9dc2e3a52";
+        // ATUALIZADO COM O SEU NOVO ID DO GIST
+        const GIST_ID = "e42228fcaa055218d2c56ba9dc2e3a52";
         const ADMIN_PASS = "05583070";
         const CODIGOS_MEI_20P = ["07.02", "07.05", "14.01", "14.02"];
 
         let REGRAS_DATA = {};
-        let TABELA_CONVERSAO = {};
         let state = {
-            regime: 'normal', municipio: '', municipioNormalizado: '', valorTotal: 0, valorMaterial: 0,
+            regime: 'normal', municipio: '', valorTotal: 0, valorMaterial: 0,
             modalPerguntas: [], reterInssConfirmado: false, basePerc: 100, deducaoExata: 0
         };
 
@@ -411,35 +402,11 @@
 
         async function loadRegras() {
             try {
-                const [resRegras, resConv] = await Promise.all([
-                    fetch(`https://api.github.com/gists/${GIST_ID}?t=${new Date().getTime()}`),
-                    fetch(`https://api.github.com/gists/${GIST_CONV_ID}?t=${new Date().getTime()}`)
-                ]);
-                
-                if(resRegras.ok && resConv.ok) {
-                    const dataRegras = await resRegras.json();
-                    const dataConv = await resConv.json();
-                    
-                    REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
-                    const rawConv = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
-                    
-                    TABELA_CONVERSAO = {};
-                    for(let cidade in rawConv) {
-                        let norm = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
-                        TABELA_CONVERSAO[norm] = {};
-                        
-                        let entries = rawConv[cidade].split(',');
-                        entries.forEach(entry => {
-                            let [fed, mun, aliq] = entry.split(':');
-                            if(mun) {
-                                TABELA_CONVERSAO[norm][mun.trim()] = {
-                                    federal: fed.trim().replace(',', '.'),
-                                    aliq: aliq ? aliq.replace('%', '').replace(',', '.') : "5.00"
-                                };
-                            }
-                        });
-                    }
-
+                const url = `https://api.github.com/gists/${GIST_ID}?t=${new Date().getTime()}`;
+                const res = await fetch(url);
+                if(res.ok) {
+                    const data = await res.json();
+                    REGRAS_DATA = JSON.parse(data.files[Object.keys(data.files)[0]].content);
                     popularSelect();
                     document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
                     document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-green-500 rounded-full";
@@ -454,7 +421,7 @@
             const select = document.getElementById('codigoServico');
             select.innerHTML = '<option value="" disabled selected>-- Selecione o Código Federal --</option>';
             Object.keys(REGRAS_DATA).sort().forEach(k => {
-                if(k === "conversoes") return;
+                if(k === "conversoes") return; // Pula a chave de conversoes
                 const opt = document.createElement('option');
                 opt.value = k;
                 opt.textContent = `${k} - ${REGRAS_DATA[k].desc.substring(0, 85)}...`;
@@ -475,6 +442,7 @@
         }
 
         function setupEvents() {
+            // EVENTO 1: BUSCA DE CNPJ E SEPARAÇÃO DOS DADOS
             document.getElementById('btnBuscarCnpj').onclick = async () => {
                 const cnpj = document.getElementById('cnpjPrestador').value.replace(/\D/g, '');
                 if(cnpj.length !== 14) return;
@@ -484,76 +452,73 @@
                     const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
                     const data = await res.json();
                     if(data.razao_social) {
-                        let nomeCidade = data.municipio.split('-')[0];
-                        state.municipioNormalizado = nomeCidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
                         state.municipio = data.municipio;
-                        
-                        document.getElementById('razaoSocialNome').textContent = data.razao_social;
-                        
-                        const elMun = document.getElementById('razaoSocialMunicipio');
-                        elMun.textContent = data.municipio + ' - ' + data.uf;
-                        elMun.title = data.municipio + ' - ' + data.uf;
-                        
-                        const situ = data.descricao_situacao_cadastral || "ATIVA";
-                        const elSitu = document.getElementById('situacaoCadastral');
-                        elSitu.textContent = situ;
-                        elSitu.className = `text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit ${situ === 'ATIVA' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}`;
-
                         if (data.opcao_pelo_mei) state.regime = 'mei';
                         else if (data.opcao_pelo_simples) state.regime = 'simples';
                         else state.regime = 'normal';
                         
+                        document.getElementById('razaoSocialNome').textContent = data.razao_social;
+                        // Exibe apenas o município, sem o estado (UF)
+                        document.getElementById('razaoSocialMunicipio').textContent = data.municipio;
+                        
+                        // Formatação do Regime
                         const elR = document.getElementById('razaoSocialRegime');
-                        elR.textContent = state.regime.toUpperCase();
+                        
+                        let textoRegime = '';
+                        if (state.regime === 'mei') textoRegime = 'MEI';
+                        else if (state.regime === 'simples') textoRegime = 'SIMPLES NACIONAL';
+                        else textoRegime = 'REGIME NORMAL'; // Agrupa presumido/real na API Pública
+                        
+                        elR.textContent = textoRegime;
+                        
                         const coresRegime = {
-                            'mei': 'border-purple-500/50 text-purple-400 bg-purple-500/5',
-                            'simples': 'border-green-500/50 text-green-500 bg-green-500/5',
-                            'normal': 'border-orange-500/50 text-orange-500 bg-orange-500/5'
+                            'mei': 'border-purple-500/50 text-purple-400 bg-purple-500/10',
+                            'simples': 'border-green-500/50 text-green-500 bg-green-500/10',
+                            'normal': 'border-orange-500/50 text-orange-500 bg-orange-500/10'
                         };
-                        elR.className = `text-[9px] font-black uppercase px-2 py-1.5 rounded border w-fit ${coresRegime[state.regime]}`;
+                        elR.className = `text-[9px] font-black uppercase px-2 py-1 rounded border ${coresRegime[state.regime]}`;
+                        
+                        // Formatação da Situação Cadastral
+                        const elSit = document.getElementById('razaoSocialSituacao');
+                        const situacao = data.descricao_situacao_cadastral || "DESCONHECIDA";
+                        elSit.textContent = situacao;
+                        if (situacao === 'ATIVA') {
+                            elSit.className = 'text-[9px] font-black uppercase px-2 py-1 rounded border border-green-500/50 text-green-400 bg-green-500/10';
+                        } else {
+                            elSit.className = 'text-[9px] font-black uppercase px-2 py-1 rounded border border-red-500/50 text-red-400 bg-red-500/10';
+                        }
                         
                         document.getElementById('razaoSocialContainer').classList.remove('hidden-el');
-                        atualizarAvisoISS();
                         lucide.createIcons();
+                        atualizarAvisoISS();
                     }
                 } catch(e) {}
                 btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`; lucide.createIcons();
             };
 
-            // NOVO EVENTO: DE/PARA INTELIGENTE DO CÓDIGO MUNICIPAL
+            // EVENTO 2: CONVERSÃO DE CÓDIGO MUNICIPAL PARA FEDERAL
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
-                const codDigitado = e.target.value.trim().toUpperCase();
-                const msgErro = document.getElementById('msgErroConversao');
-                const selFed = document.getElementById('codigoServico');
-                const aliqInput = document.getElementById('aliqISS');
-
-                if(!codDigitado) {
-                    msgErro.classList.add('hidden-el');
-                    e.target.classList.remove('border-green-500', 'border-red-500');
-                    return;
-                }
-
-                if(!state.municipioNormalizado) {
-                    msgErro.innerHTML = `Busque o CNPJ primeiro`;
-                    msgErro.classList.remove('hidden-el');
-                    return;
-                }
-
-                const tabelaCidade = TABELA_CONVERSAO[state.municipioNormalizado];
-                const info = tabelaCidade ? tabelaCidade[codDigitado] : null;
-
-                if(info) {
-                    selFed.value = info.federal;
-                    if(aliqInput && info.aliq) aliqInput.value = parseFloat(info.aliq).toFixed(2);
-                    selFed.dispatchEvent(new Event('change'));
-                    msgErro.classList.add('hidden-el');
-                    e.target.classList.remove('border-red-500');
-                    e.target.classList.add('border-green-500');
-                } else {
-                    msgErro.innerHTML = `Cód. não mapeado em ${state.municipioNormalizado}`;
-                    msgErro.classList.remove('hidden-el');
-                    e.target.classList.remove('border-green-500');
-                    e.target.classList.add('border-red-500');
+                const codMun = e.target.value.trim();
+                if (!codMun || !state.municipio) return;
+                
+                // Remove acentos para padronizar e evitar erros (ex: SÃO PAULO vs SAO PAULO)
+                const normalizeStr = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                const munNome = normalizeStr(state.municipio);
+                
+                if (REGRAS_DATA.conversoes) {
+                    // Tenta achar a chave do município no JSON
+                    let municipioKey = Object.keys(REGRAS_DATA.conversoes).find(k => normalizeStr(k) === munNome);
+                    
+                    if (municipioKey && REGRAS_DATA.conversoes[municipioKey][codMun]) {
+                        const codFed = REGRAS_DATA.conversoes[municipioKey][codMun];
+                        const selectCodServico = document.getElementById('codigoServico');
+                        
+                        // Se encontrou no select e for diferente, ele muda automaticamente e aciona os cálculos
+                        if (selectCodServico.value !== codFed && selectCodServico.querySelector(`option[value="${codFed}"]`)) {
+                            selectCodServico.value = codFed;
+                            selectCodServico.dispatchEvent(new Event('change')); // Força a atualização da interface
+                        }
+                    }
                 }
             });
 
@@ -579,11 +544,11 @@
                 if(parseFloat(r.inss) > 0) {
                     const isObra = cod.startsWith('07');
                     const instrucao = isObra ? {
-                        sim: `<p>A <b>Empreitada Parcial ou Subempreitada</b> obriga a retenção de 11% de INSS. Ocorre quando:</p><ul class="list-disc pl-5 space-y-2 mt-3"><li><b>Contratação Fragmentada:</b> Você contratou a empresa para uma fase da obra (ex: fundação, pintura).</li><li><b>Matrícula CNO (Tomador):</b> A matrícula da obra no INSS está no seu nome ou da sua empresa.</li></ul>`,
-                        nao: `<p>A <b>Empreitada Total</b> isenta o tomador do recolhimento de INSS. Ocorre APENAS se:</p><ul class="list-disc pl-5 space-y-2 mt-3"><li><b>Contrato Global:</b> O prestador assumiu a execução de <b>TODA</b> a obra.</li><li><b>Matrícula CNO (Prestador):</b> O prestador abriu a matrícula no INSS no próprio nome dele.</li></ul>`
+                        sim: `<p>A <b>Empreitada Parcial ou Subempreitada</b> obriga a retenção de 11% de INSS. Ocorre quando:</p><ul class="list-disc pl-5 space-y-2"><li><b>Contratação Fragmentada:</b> Você contratou a empresa para uma fase da obra (ex: fundação, pintura).</li><li><b>Matrícula CNO (Tomador):</b> A matrícula da obra no INSS está no seu nome ou da sua empresa.</li></ul>`,
+                        nao: `<p>A <b>Empreitada Total</b> isenta o tomador do recolhimento de INSS. Ocorre APENAS se:</p><ul class="list-disc pl-5 space-y-2"><li><b>Contrato Global:</b> O prestador assumiu a execução de <b>TODA</b> a obra.</li><li><b>Matrícula CNO (Prestador):</b> O prestador abriu a matrícula no INSS no próprio nome dele.</li></ul>`
                     } : {
-                        sim: `<p>A <b>Cessão de Mão de Obra</b> obriga a retenção de 11%. Ocorre quando os 3 requisitos são verdadeiros:</p><ul class="list-disc pl-5 space-y-2 mt-3"><li><b>Disposição:</b> Os trabalhadores ficam submetidos à sua coordenação (você diz o que vão fazer).</li><li><b>Dependências:</b> O serviço é executado nas suas instalações.</li><li><b>Habitualidade:</b> O serviço é contínuo (ex: diário, escala fixa), não é um mero conserto.</li></ul>`,
-                        nao: `<p>O <b>Serviço Eventual ou Isolado</b> não retém 11% de INSS. Ocorre quando:</p><ul class="list-disc pl-5 space-y-2 mt-3"><li><b>Trabalho Pontual:</b> O prestador faz uma tarefa específica e vai embora.</li><li><b>Autonomia Total:</b> O prestador decide como e quando fazer o serviço.</li><li><b>Foco no Produto:</b> A contratação visa uma entrega final (ex: máquina consertada).</li></ul>`
+                        sim: `<p>A <b>Cessão de Mão de Obra</b> obriga a retenção de 11%. Ocorre quando os 3 requisitos são verdadeiros:</p><ul class="list-disc pl-5 space-y-2"><li><b>Disposição:</b> Os trabalhadores ficam submetidos à sua coordenação (você diz o que vão fazer).</li><li><b>Dependências:</b> O serviço é executado nas suas instalações.</li><li><b>Habitualidade:</b> O serviço é contínuo (ex: diário, escala fixa), não é um mero conserto.</li></ul>`,
+                        nao: `<p>O <b>Serviço Eventual ou Isolado</b> não retém 11% de INSS. Ocorre quando:</p><ul class="list-disc pl-5 space-y-2"><li><b>Trabalho Pontual:</b> O prestador faz uma tarefa específica e vai embora.</li><li><b>Autonomia Total:</b> O prestador decide como e quando fazer o serviço.</li><li><b>Foco no Produto:</b> A contratação visa uma entrega final (ex: máquina consertada).</li></ul>`
                     };
                     state.modalPerguntas = [instrucao];
                     document.getElementById('modalDetailSim').innerHTML = instrucao.sim;
@@ -597,7 +562,9 @@
                 document.getElementById('printModal').classList.remove('hidden-el');
             };
 
+            // LÓGICA DE IMPRESSÃO ATUALIZADA
             document.getElementById('btnGerarImpressao').onclick = () => {
+                // Preenchimento de dados textuais
                 document.getElementById('pTomador').textContent = document.getElementById('inputNomeTomador').value || "Não informado";
                 document.getElementById('pNf').textContent = document.getElementById('inputNumeroNf').value || "Não informado";
                 document.getElementById('pCnpj').textContent = document.getElementById('cnpjPrestador').value;
@@ -605,6 +572,7 @@
                 document.getElementById('pData').textContent = new Date().toLocaleDateString('pt-BR');
                 document.getElementById('pCod').textContent = document.getElementById('codigoServico').value;
 
+                // INCLUSÃO DOS VALORES FINANCEIROS NO PARECER IMPRESSO
                 document.getElementById('pValBruto').textContent = document.getElementById('resBruto').textContent;
                 document.getElementById('pValLiquido').textContent = document.getElementById('resLiquido').textContent;
 
