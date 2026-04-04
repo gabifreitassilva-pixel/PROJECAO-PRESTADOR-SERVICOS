@@ -128,7 +128,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase font-mono tracking-wider">Cód. Municipal</label>
-                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono" placeholder="Ex: 01015">
+                            <input type="text" id="codMunicipal" class="w-full bg-[#080808] border border-gray-700 rounded-lg px-3 py-3 text-sm text-white focus:border-orange-500 outline-none font-mono" placeholder="Ex: 101">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-white mb-1.5 uppercase tracking-wider">Valor Bruto (R$)</label>
@@ -516,7 +516,7 @@
                 btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i>`; lucide.createIcons();
             };
 
-            // EVENTO 2: CONVERSÃO DE CÓDIGO MUNICIPAL PARA FEDERAL
+            // EVENTO 2: CONVERSÃO DE CÓDIGO MUNICIPAL PARA FEDERAL (AGORA COM LENTE DE PARSE DE STRING)
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
                 const codMun = e.target.value.trim();
                 if (!codMun || !state.municipio) return;
@@ -525,21 +525,55 @@
                 const normalizeStr = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                 const munNome = normalizeStr(state.municipio);
                 
-                // Tenta achar a chave de conversões no Gist novo, ou no antigo (compatibilidade)
-                const baseConversoes = CONVERSOES_DATA.conversoes || CONVERSOES_DATA || REGRAS_DATA.conversoes;
+                const baseConversoes = CONVERSOES_DATA.conversoes || CONVERSOES_DATA;
                 
                 if (baseConversoes) {
-                    // Tenta achar a chave do município no JSON
                     let municipioKey = Object.keys(baseConversoes).find(k => normalizeStr(k) === munNome);
                     
-                    if (municipioKey && baseConversoes[municipioKey][codMun]) {
-                        const codFed = baseConversoes[municipioKey][codMun];
-                        const selectCodServico = document.getElementById('codigoServico');
+                    if (municipioKey) {
+                        const municipioDataStr = baseConversoes[municipioKey];
+                        let codFed = null;
+                        let aliqIss = null;
                         
-                        // Se encontrou no select e for diferente, ele muda automaticamente e aciona os cálculos
-                        if (selectCodServico.value !== codFed && selectCodServico.querySelector(`option[value="${codFed}"]`)) {
-                            selectCodServico.value = codFed;
-                            selectCodServico.dispatchEvent(new Event('change')); // Força a atualização da interface
+                        // O formato lido agora trata a super string do seu Gist: "01.01:101:2%,01.02:102:2%"
+                        if (typeof municipioDataStr === 'string') {
+                            // Separamos pelo % para não quebrar alíquotas decimais que usam vírgula (ex: 2,9%)
+                            const rules = municipioDataStr.split('%');
+                            
+                            for (let rule of rules) {
+                                rule = rule.replace(/^,/, '').trim(); // Remove a vírgula de junção
+                                if (!rule) continue;
+                                
+                                const parts = rule.split(':');
+                                if (parts.length >= 2) {
+                                    // Limpa espaços extras e vírgulas (corrige erros como "01.0 7" ou "01,08")
+                                    let pFed = parts[0].replace(/,/g, '.').replace(/\s+/g, '').trim(); 
+                                    let pMun = parts[1].trim();
+                                    
+                                    if (pMun === codMun) {
+                                        codFed = pFed;
+                                        // Puxa a alíquota (ex: "2,9" vira "2.9")
+                                        if(parts[2]) {
+                                            aliqIss = parts[2].replace(/,/g, '.').trim();
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (codFed) {
+                            const selectCodServico = document.getElementById('codigoServico');
+                            if (selectCodServico.value !== codFed && selectCodServico.querySelector(`option[value="${codFed}"]`)) {
+                                selectCodServico.value = codFed;
+                                selectCodServico.dispatchEvent(new Event('change')); // Força a atualização da tela
+                                
+                                // ✨ Preenchimento Automático da Alíquota de ISS
+                                if (aliqIss) {
+                                    const aliqInput = document.getElementById('aliqISS');
+                                    aliqInput.value = parseFloat(aliqIss).toFixed(2);
+                                }
+                            }
                         }
                     }
                 }
