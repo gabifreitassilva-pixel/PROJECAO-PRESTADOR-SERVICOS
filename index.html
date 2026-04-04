@@ -419,8 +419,8 @@
         let REGRAS_DATA = {};
         let TABELA_CONVERSAO = {};
         let state = {
-            regime: 'normal', municipio: '', valorTotal: 0, valorMaterial: 0, 
-            reterInssConfirmado: false, basePerc: 100, deducaoExata: 0
+            regime: 'normal', municipio: '', valorTotal: 0, valorMaterial: 0,
+            modalPerguntas: [], reterInssConfirmado: false, basePerc: 100, deducaoExata: 0
         };
 
         async function init() {
@@ -441,6 +441,7 @@
                     const dataConv = await resConv.json();
                     
                     REGRAS_DATA = JSON.parse(dataRegras.files[Object.keys(dataRegras.files)[0]].content);
+                    
                     const rawConv = JSON.parse(dataConv.files[Object.keys(dataConv.files)[0]].content);
                     TABELA_CONVERSAO = rawConv.conversoes ? rawConv.conversoes : rawConv;
 
@@ -448,7 +449,10 @@
                     document.getElementById('statusText').textContent = "BANCO SINCRONIZADO";
                     document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-green-500 rounded-full";
                 }
-            } catch(e) { document.getElementById('statusText').textContent = "ERRO SINCRONIA"; }
+            } catch(e) {
+                document.getElementById('statusText').textContent = "ERRO SINCRONIA";
+                document.getElementById('statusDot').className = "w-1.5 h-1.5 bg-red-500 rounded-full";
+            }
         }
 
         function popularSelect() {
@@ -507,18 +511,20 @@
             };
 
             document.getElementById('codMunicipal').addEventListener('input', (e) => {
-                const fed = TABELA_CONVERSAO[e.target.value.trim()];
+                const muni = e.target.value.trim();
+                const fed = TABELA_CONVERSAO[muni];
+                
                 if(fed) {
                     const sel = document.getElementById('codigoServico');
                     if(sel.querySelector(`option[value="${fed}"]`)) {
                         sel.value = fed;
                         sel.dispatchEvent(new Event('change'));
-                        e.target.style.borderColor = "#22c55e";
-                        e.target.style.borderWidth = "2px";
+                        e.target.classList.remove('border-gray-700', 'focus:border-orange-500');
+                        e.target.classList.add('border-green-500', 'focus:border-green-500');
                     }
                 } else { 
-                    e.target.style.borderColor = "#374151"; 
-                    e.target.style.borderWidth = "1px";
+                    e.target.classList.add('border-gray-700', 'focus:border-orange-500');
+                    e.target.classList.remove('border-green-500', 'focus:border-green-500');
                 }
             });
 
